@@ -10,7 +10,7 @@ The internet is full of prompting advice. "Be specific." "Use chain-of-thought."
 
 I'll explain how the attention mechanism actually works, then show why that knowledge makes popular prompting techniques make sense. Once you understand the machinery, you stop guessing and start engineering.
 
-> **Interactive Companion**: As you read, you can explore an [interactive attention visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/) that demonstrates each step with animated examples.
+> **Interactive Companion**: As you read, you can explore an [interactive attention visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/index.html) that demonstrates each step with animated examples.
 
 ## What Attention Actually Does
 
@@ -35,7 +35,7 @@ Each token gets converted into a vector, a list of numbers representing that tok
 
 Modern LLMS often use 512 to 4096 dimensions - enough axes to capture fine distinctions like "walk" vs "stroll" vs "march." Semantically similar words are close together in the embedding space. The model learns these during training: words appearing in similar contexts ("The ___ sat on the mat" fits cat, dog, child) get pushed toward similar vectors because this lets the model reuse what it learned about one word for another. The result: "cat" and "dog" point in nearly the same direction, while "cat" and "algorithm" point very differently.
 
-> **Try it**: The [Embedding Space Explorer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/embeddings) lets you click any two words and see their similarity score. Notice how "walk," "stroll," and "march" cluster together, while "algorithm" sits far away.
+> **Try it**: The [Embedding Space Explorer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/embeddings.html) lets you click any two words and see their similarity score. Notice how "walk," "stroll," and "march" cluster together, while "algorithm" sits far away.
 
 The model also adds positional encodings so it knows word order. Without this, "dog bites man" and "man bites dog" would look identical. These positional encodings affect attention patterns in ways we'll revisit later.
 
@@ -208,7 +208,7 @@ After attention layers process the input, the model must actually generate outpu
                  logits (50,000 scores)
 ```
 
-> **Try it**: The [Prediction Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/prediction) animates this projection from hidden state to vocabulary logits (Step 2).
+> **Try it**: The [Prediction Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/prediction.html) animates this projection from hidden state to vocabulary logits (Step 2).
 
 **Outcome**: Each word in the vocabulary now has a score (logit). High scores mean "more likely," low scores mean "less likely."
 
@@ -291,13 +291,13 @@ Without chain-of-thought, the model must jump from question to answer with no in
 
 To make this concrete, I've built interactive visualizations that walk through the attention mechanism, embedding space, and next token prediction step by step.
 
-**[View the Embedding Space Explorer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/embeddings)** - Click any two words to see their cosine similarity. Explore how semantically similar words cluster together.
+**[View the Embedding Space Explorer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/embeddings.html)** - Click any two words to see their cosine similarity. Explore how semantically similar words cluster together.
 
-**[View the Attention Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/)** - Watch tokens get embedded, split into Q/K/V, compute attention scores, and produce outputs.
+**[View the Attention Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/index.html)** - Watch tokens get embedded, split into Q/K/V, compute attention scores, and produce outputs.
 
-**[View the Multi-Head Attention Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/multihead)** - See how multiple heads learn different relationship types and combine through the output projection.
+**[View the Multi-Head Attention Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/multihead.html)** - See how multiple heads learn different relationship types and combine through the output projection.
 
-**[View the Prediction Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/prediction)** - See how temperature, softmax, and sampling strategies turn attention outputs into generated text.
+**[View the Prediction Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/prediction.html)** - See how temperature, softmax, and sampling strategies turn attention outputs into generated text.
 
 ## From Theory to Practice: Why Prompting Techniques Work
 

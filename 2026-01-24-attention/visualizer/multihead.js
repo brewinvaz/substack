@@ -562,7 +562,7 @@ function renderProjection() {
 
     const dimLabel = document.createElement('div');
     dimLabel.className = 'projection-dim-label';
-    dimLabel.textContent = 'Back to model dimension';
+    dimLabel.textContent = 'Flows to residual + feed-forward layers';
 
     output.appendChild(outputLabel);
     output.appendChild(outputVector);
