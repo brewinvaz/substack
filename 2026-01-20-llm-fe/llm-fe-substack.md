@@ -151,6 +151,4 @@ The broader pattern matches what we're seeing across AI: LLMs aren't replacing e
 
 ---
 
-*Brewin writes about applied AI/ML, data infrastructure, and the intersection of AI/ML and business. Edited with LLM assistance.*
-
-*The opinions expressed in this article are those of the author.*
+*Brewin writes about applied AI/ML, data infrastructure, and the intersection of AI/ML and business. Edited with LLM assistance. The opinions expressed in this article are those of the author.*
