@@ -1,4 +1,4 @@
-# Inside the Black Box: How Attention Works and Why It Makes You Better at Prompting
+# Inside the Black Box: How Attention Works and Why It Makes You Better at PromptingOutput Proj
 
 *Understanding the mechanism behind LLMs transforms prompting from guesswork into engineering.*
 
@@ -37,11 +37,11 @@ Each token gets converted into a vector, a list of numbers representing that tok
 "mat" → [0.8, 0.2, 0.6, 0.4]    (noun, inanimate)
 ```
 
-Modern LLMS often use 512 to 4096 dimensions - enough axes to capture fine distinctions like "walk" vs "stroll" vs "march." Semantically similar words are close together in the embedding space. The model learns these during training: words appearing in similar contexts ("The ___ sat on the mat" fits cat, dog, child) get pushed toward similar vectors because this lets the model reuse what it learned about one word for another. The result: "cat" and "dog" point in nearly the same direction, while "cat" and "algorithm" point very differently.
+Modern LLMs often use 512 to 4096 dimensions - enough axes to capture fine distinctions like "walk" vs "stroll" vs "march." Semantically similar words are close together in the embedding space. The model learns these during training: words appearing in similar contexts ("The ___ sat on the mat" fits cat, dog, child) get pushed toward similar vectors because this lets the model reuse what it learned about one word for another. The result: "cat" and "dog" point in nearly the same direction, while "cat" and "algorithm" point very differently.
 
 > **Try it**: The [Embedding Space Explorer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/embeddings.html) lets you click any two words and see their similarity score. Notice how "walk," "stroll," and "march" cluster together, while "algorithm" sits far away.
 
-The model also adds positional encodings so it knows word order. Without this, "dog bites man" and "man bites dog" would look identical. The original transformer paper used fixed sinusoidal functions to encode position, but most modern models (including GPT and Claude) learn position embeddings during training, which allows them to discover whatever positional patterns work best. These positional encodings affect attention patterns in ways we'll revisit later.
+The model also adds positional encodings so it knows word order. Without this, "dog bites man" and "man bites dog" would look identical. The original transformer paper used fixed sinusoidal functions to encode position, but most modern models (including GPT and Claude) learn position embeddings during training, which allows them to discover whatever positional patterns work best. These positional encodings affect attention patterns, as we'll see when computing attention scores in Step 3.
 
 **Outcome**: Each word is now a list of numbers encoding its meaning plus its position. The model can do math on words.
 
@@ -101,6 +101,10 @@ Higher scores mean stronger attention. Notice "sat" has high scores for "cat" (1
 The division by $\sqrt{d_k}$ (where $d_k$ is the dimension of the key vectors) prevents the dot products from getting too large, which would cause problems in the next step.
 
 **Outcome**: A grid showing how relevant each word is to every other word. "sat" scores high for "cat" (subject) and "mat" (location).
+
+**How Position Affects These Scores**
+
+Remember the positional encodings from Step 1? They're embedded in Q and K before this dot product, so attention scores reflect both meaning and position. Tokens often attend more strongly to nearby tokens because their positional components are similar. The model also learns position-dependent patterns—for instance, that words following "the" are typically nouns. This positional influence is why where you place instructions in a prompt matters: it directly affects these attention scores.
 
 > **Try it**: Watch the attention scores computed in real-time in the [Attention Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/index.html) (Step 4).
 
