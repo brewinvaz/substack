@@ -41,7 +41,7 @@ Modern LLMS often use 512 to 4096 dimensions - enough axes to capture fine disti
 
 > **Try it**: The [Embedding Space Explorer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/embeddings.html) lets you click any two words and see their similarity score. Notice how "walk," "stroll," and "march" cluster together, while "algorithm" sits far away.
 
-The model also adds positional encodings so it knows word order. Without this, "dog bites man" and "man bites dog" would look identical. These positional encodings affect attention patterns in ways we'll revisit later.
+The model also adds positional encodings so it knows word order. Without this, "dog bites man" and "man bites dog" would look identical. The original transformer paper used fixed sinusoidal functions to encode position, but most modern models (including GPT and Claude) learn position embeddings during training, which allows them to discover whatever positional patterns work best. These positional encodings affect attention patterns in ways we'll revisit later.
 
 **Outcome**: Each word is now a list of numbers encoding its meaning plus its position. The model can do math on words.
 
@@ -197,7 +197,22 @@ The output projection $W_O$ is a learned weight matrix that combines the concate
 
 > **Try it**: The [Multi-Head Attention Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/multihead.html) shows how different heads learn different patterns and how their outputs combine through the $W_O$ projection.
 
-**Note on Feed-Forward Networks**: After attention mixes information *between* tokens, each token passes through a feed-forward network that processes it *individually*. This is where much of the model's factual "knowledge" is stored. The combination of attention (mixing) and feed-forward (processing) repeats across many layers.
+### The Complete Transformer Block
+
+A transformer layer includes more than just attention. Each layer follows a pattern:
+
+1. **Attention** mixes information *between* tokens
+2. **Residual connection** adds the original input back to the attention output
+3. **Layer normalization** stabilizes values to prevent them from exploding or vanishing
+4. **Feed-forward network** processes each token *individually* through two dense layers
+5. **Another residual connection** adds the input to the feed-forward output
+6. **Another layer normalization** stabilizes again
+
+The residual connections (also called "skip connections") are critical: they let gradients flow directly backward during training and allow layers to learn incremental refinements rather than complete transformations. Layer normalization keeps values in a stable range as they pass through dozens of layers.
+
+The feed-forward network expands each token's representation to a larger dimension (typically 4x), applies a nonlinearity, then projects back down. This is where much of the model's factual "knowledge" is stored. Researchers have found that specific neurons in these networks activate for specific concepts.
+
+The combination of attention (mixing) and feed-forward (processing) repeats across many layers, with each layer building on the representations from the previous one.
 
 > **Continuing in the Prediction Visualizer**: The following steps (6-9) show how attention outputs become generated text. Explore these in the [Prediction Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/prediction.html).
 
