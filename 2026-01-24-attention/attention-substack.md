@@ -191,20 +191,24 @@ The output projection $W_O$ is a learned weight matrix that combines the concate
 After attention layers process the input, the model must actually generate output. The final hidden state at the last position gets projected from the model dimension (512) to vocabulary size (50,000+):
 
 ```
-┌─────────────────────────────────────────────────┐
-│ [The] [cat] [sat] [on] [the] → Attention        │
-│                          │                      │
-│                          ▼                      │
-│                    hidden state                 │
-│                       (512)                     │
-│                          │                      │
-│                          │ × W_vocab (512×50K)  │
-│                          ▼                      │
-│                    logits (50,000)              │
-│                    one score per                │
-│                    vocabulary token             │
-└─────────────────────────────────────────────────┘
+[The] [cat] [sat] [on] [the]
+  ↓     ↓     ↓    ↓     ↓
+┌─────────────────────────────────┐
+│        Attention Layers         │
+│   (all tokens attend to each    │
+│    other, building context)     │
+└─────────────────────────────────┘
+  ↓     ↓     ↓    ↓     ↓
+ h₁    h₂    h₃   h₄    h₅  ← hidden states (512-dim each)
+                        │
+                        │ only last position predicts next token
+                        ↓
+                  × W_vocab (512 × 50K)
+                        ↓
+                 logits (50,000 scores)
 ```
+
+> **Try it**: The [Prediction Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/prediction) animates this projection from hidden state to vocabulary logits (Step 2).
 
 **Outcome**: Each word in the vocabulary now has a score (logit). High scores mean "more likely," low scores mean "less likely."
 
@@ -416,6 +420,7 @@ You're not coaxing a mysterious intelligence. You're providing inputs to a well-
 
 **Further Reading**
 - Vaswani et al., "[Attention Is All You Need](https://arxiv.org/abs/1706.03762)" (2017), the original transformer paper
+- Wei et al., "[Chain-of-Thought Prompting Elicits Reasoning in Large Language Models](https://arxiv.org/abs/2201.11903)" (2022), the paper that introduced chain-of-thought prompting
 - Jay Alammar's "[The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/)" for excellent visual explanations
 
 ---

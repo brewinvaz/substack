@@ -1,5 +1,49 @@
 /* Multi-Head Attention Visualizer Styles */
 
+/* ===== NAVIGATION ===== */
+.visualizer-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-lg);
+    margin-bottom: var(--space-xl);
+    padding: var(--space-md);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    color: var(--cyan-bright);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: 8px;
+    transition: all 0.2s var(--ease-in-out);
+}
+
+.nav-link:hover {
+    background: var(--bg-elevated);
+    color: var(--cyan-glow);
+}
+
+.nav-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.nav-current {
+    color: var(--text-primary);
+    font-weight: 600;
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-elevated);
+    border-radius: 8px;
+}
+
 /* Head color palette */
 :root {
     --head1-color: #3b82f6;
