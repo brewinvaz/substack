@@ -75,7 +75,7 @@ const STEP_LABELS = [
     'Parallel Attention Heads',
     'What Each Head Learned',
     'Concatenate Outputs',
-    'Output Projection (W_O)'
+    'Output Projection (W<sub>O</sub>)'
 ];
 
 // Initialize
@@ -197,7 +197,7 @@ function showStep(step) {
 
     const stepLabel = document.getElementById('stepLabel');
     stepLabel.querySelector('.step-num').textContent = String(step).padStart(2, '0');
-    stepLabel.querySelector('.step-name').textContent = STEP_LABELS[step - 1];
+    stepLabel.querySelector('.step-name').innerHTML = STEP_LABELS[step - 1];
 
     updateStepMarkers();
     updateButtonStates();
@@ -227,7 +227,8 @@ function getWeightColor(weight, headIndex) {
         { r: 236, g: 72, b: 153 }    // head4 - pink
     ];
     const c = colors[headIndex];
-    const alpha = 0.2 + weight * 0.8;
+    // Scale alpha more aggressively - low weights are subtle, high weights pop
+    const alpha = 0.25 + weight * 0.75;
     return `rgba(${c.r}, ${c.g}, ${c.b}, ${alpha})`;
 }
 
@@ -281,7 +282,7 @@ function renderHeadsGrid() {
 
         const matrix = document.createElement('div');
         matrix.className = 'mini-matrix';
-        matrix.style.gridTemplateColumns = `repeat(${TOKENS.length}, 28px)`;
+        matrix.style.gridTemplateColumns = `repeat(${TOKENS.length}, 32px)`;
 
         head.weights.forEach((row, i) => {
             row.forEach((weight, j) => {
@@ -289,7 +290,14 @@ function renderHeadsGrid() {
                 cell.className = 'mini-cell';
                 cell.textContent = Math.round(weight * 100) + '%';
                 cell.style.background = getWeightColor(weight, headIndex);
-                cell.style.color = weight > 0.3 ? 'white' : 'var(--text-dim)';
+                // High weights get bright white, low weights get dimmed
+                if (weight > 0.30) {
+                    cell.style.color = 'white';
+                } else if (weight > 0.15) {
+                    cell.style.color = 'rgba(255, 255, 255, 0.6)';
+                } else {
+                    cell.style.color = 'rgba(255, 255, 255, 0.4)';
+                }
                 if (weight > 0.35) cell.classList.add('highlight');
 
                 matrix.appendChild(cell);
@@ -430,7 +438,7 @@ function renderConcatenation() {
 
     const dimLabel = document.createElement('div');
     dimLabel.className = 'concat-result-dim';
-    dimLabel.textContent = '4 heads × d_v = 4d_v dimensions';
+    dimLabel.innerHTML = '4 heads × d<sub>v</sub> = 4d<sub>v</sub> dimensions';
 
     result.appendChild(resultLabel);
     result.appendChild(resultVector);
@@ -455,7 +463,7 @@ function renderProjection() {
 
     const inputLabel = document.createElement('div');
     inputLabel.className = 'projection-label';
-    inputLabel.textContent = 'Concatenated (4d_v)';
+    inputLabel.innerHTML = 'Concatenated (4d<sub>v</sub>)';
 
     const inputVector = document.createElement('div');
     inputVector.className = 'projection-vector';
@@ -495,7 +503,7 @@ function renderProjection() {
 
     const matrixLabel = document.createElement('div');
     matrixLabel.className = 'matrix-label';
-    matrixLabel.textContent = 'W_O';
+    matrixLabel.innerHTML = 'W<sub>O</sub>';
 
     const matrixGrid = document.createElement('div');
     matrixGrid.className = 'matrix-grid';
@@ -509,7 +517,7 @@ function renderProjection() {
 
     const matrixDims = document.createElement('div');
     matrixDims.className = 'matrix-dims';
-    matrixDims.textContent = '(4d_v × d_model)';
+    matrixDims.innerHTML = '(4d<sub>v</sub> × d<sub>model</sub>)';
 
     matrix.appendChild(matrixLabel);
     matrix.appendChild(matrixGrid);
@@ -536,15 +544,19 @@ function renderProjection() {
 
     const outputLabel = document.createElement('div');
     outputLabel.className = 'projection-label';
-    outputLabel.textContent = 'Final Output (d_model)';
+    outputLabel.innerHTML = 'Final Output (d<sub>model</sub>)';
 
     const outputVector = document.createElement('div');
     outputVector.className = 'output-vector-vis';
 
+    // Create output cells with varying heights to show distinct values
+    const outputValues = [0.85, 0.42, 0.91, 0.33, 0.78, 0.56, 0.95, 0.67];
     for (let i = 0; i < 8; i++) {
         const cell = document.createElement('div');
         cell.className = 'output-cell';
-        cell.style.opacity = 0.5 + Math.random() * 0.5;
+        const value = outputValues[i];
+        cell.style.height = `${20 + value * 30}px`;
+        cell.style.opacity = 0.5 + value * 0.5;
         outputVector.appendChild(cell);
     }
 

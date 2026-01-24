@@ -79,6 +79,15 @@ body {
     overflow-x: hidden;
 }
 
+/* Ensure subscripts render properly (including in flex containers) */
+sub {
+    font-size: 0.7em;
+    vertical-align: baseline;
+    position: relative;
+    top: 0.3em;
+    line-height: 0;
+}
+
 /* ===== GRID BACKGROUND ===== */
 .grid-bg {
     position: fixed;
@@ -460,13 +469,16 @@ header h1 {
     font-weight: 700;
     margin: 0 0 var(--space-sm) 0;
     color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-md);
+    text-align: center;
+}
+
+.step-header h2 .step-icon {
+    margin-right: var(--space-md);
 }
 
 .step-icon {
+    display: inline-block;
+    vertical-align: middle;
     font-family: var(--font-mono);
     font-size: 0.875rem;
     font-weight: 700;

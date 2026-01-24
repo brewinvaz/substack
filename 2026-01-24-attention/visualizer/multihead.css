@@ -100,6 +100,9 @@
     opacity: 0;
     transform: translateY(20px);
     transition: all 0.5s var(--ease-out-expo);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .head-card.visible {
@@ -115,8 +118,10 @@
 .head-header {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: var(--space-sm);
     margin-bottom: var(--space-md);
+    width: 100%;
 }
 
 .head-indicator {
@@ -148,6 +153,7 @@
     color: var(--text-tertiary);
     margin: 0 0 var(--space-md) 0;
     font-style: italic;
+    text-align: center;
 }
 
 /* Mini attention matrix */
@@ -165,15 +171,15 @@
 }
 
 .mini-cell {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: var(--font-mono);
-    font-size: 0.55rem;
-    font-weight: 600;
+    font-size: 0.6rem;
+    font-weight: 700;
     opacity: 0;
     transform: scale(0.5);
     transition: all 0.3s var(--ease-out-expo);
@@ -192,20 +198,21 @@
 .mini-matrix-container {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: var(--space-xs);
 }
 
 .mini-matrix-labels {
     display: flex;
     gap: 2px;
-    padding-left: 32px;
+    margin-left: 36px;
 }
 
 .mini-matrix-label {
-    width: 28px;
+    width: 32px;
     font-family: var(--font-mono);
-    font-size: 0.5rem;
-    color: var(--text-dim);
+    font-size: 0.55rem;
+    color: var(--text-secondary);
     text-align: center;
     white-space: nowrap;
     overflow: hidden;
@@ -223,11 +230,11 @@
 }
 
 .mini-matrix-side-label {
-    height: 28px;
-    width: 28px;
+    height: 32px;
+    width: 32px;
     font-family: var(--font-mono);
-    font-size: 0.5rem;
-    color: var(--text-dim);
+    font-size: 0.55rem;
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -599,14 +606,19 @@
 
 .output-vector-vis {
     display: flex;
-    gap: 2px;
+    align-items: flex-end;
+    gap: 3px;
+    height: 50px;
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
 }
 
 .output-cell {
-    width: 12px;
-    height: 36px;
+    width: 14px;
     border-radius: 2px;
-    background: var(--key-color);
+    background: linear-gradient(180deg, var(--key-glow), var(--key-color));
+    transition: height 0.3s ease-out;
 }
 
 .projection-dim-label {
@@ -618,6 +630,7 @@
 /* Output insight - reuse from main styles but adjust */
 .output-insight {
     max-width: 600px;
+    margin: var(--space-xl) auto 0;
 }
 
 .insight-text {
@@ -660,15 +673,15 @@
     }
 
     .mini-cell {
-        width: 22px;
-        height: 22px;
-        font-size: 0.45rem;
+        width: 26px;
+        height: 26px;
+        font-size: 0.5rem;
     }
 
     .mini-matrix-label,
     .mini-matrix-side-label {
-        width: 22px;
-        height: 22px;
-        font-size: 0.4rem;
+        width: 26px;
+        height: 26px;
+        font-size: 0.45rem;
     }
 }
