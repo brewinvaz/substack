@@ -2,15 +2,15 @@
 
 *Understanding the mechanism behind LLMs transforms prompting from guesswork into engineering.*
 
-> **Note**: This article simplifies certain details for clarity. Real transformer implementations include additional components and optimizations not covered here. The core attention mechanism described is accurate, but production models are more complex.
+> **Note**: This article simplifies details for clarity. Real transformer implementations include additional components and optimizations not covered here. The core attention mechanism described is accurate, but production models are more complex.
 
 ---
 
 The internet is full of prompting advice. "Be specific." "Use chain-of-thought." "Put important instructions at the beginning." These tips work, but rarely does anyone explain *why*. The result is cargo cult prompting: rituals that produce results without understanding.
 
-This article aims to fix that. I'll explain how the attention mechanism actually works, then show why that knowledge makes popular prompting techniques make sense. Once you understand the machinery, you stop guessing and start engineering.
+I'll explain how the attention mechanism actually works, then show why that knowledge makes popular prompting techniques make sense. Once you understand the machinery, you stop guessing and start engineering.
 
-> **Interactive Companion**: As you read, you can explore an [interactive attention visualizer](https://brewinvaz.github.io/substack/2026-01-23-attention/visualizer/) that demonstrates each step with animated examples.
+> **Interactive Companion**: As you read, you can explore an [interactive attention visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/) that demonstrates each step with animated examples.
 
 ## What Attention Actually Does
 
@@ -33,7 +33,9 @@ Each token gets converted into a vector, a list of numbers representing that tok
 "mat" → [0.8, 0.2, 0.6, 0.4]    (noun, inanimate)
 ```
 
-Real models use 512 to 4096 dimensions - enough axes to capture fine distinctions like "walk" vs "stroll" vs "march." Why do similar words get similar vectors? The model learns these during training: words appearing in similar contexts ("The ___ sat on the mat" fits cat, dog, child) get pushed toward similar vectors because this lets the model reuse what it learned about one word for another. The result: "cat" and "dog" point in nearly the same direction, while "cat" and "algorithm" point very differently.
+Modern LLMS often use 512 to 4096 dimensions - enough axes to capture fine distinctions like "walk" vs "stroll" vs "march." Semantically similar words are close together in the embedding space. The model learns these during training: words appearing in similar contexts ("The ___ sat on the mat" fits cat, dog, child) get pushed toward similar vectors because this lets the model reuse what it learned about one word for another. The result: "cat" and "dog" point in nearly the same direction, while "cat" and "algorithm" point very differently.
+
+> **Try it**: The [Embedding Space Explorer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/embeddings) lets you click any two words and see their similarity score. Notice how "walk," "stroll," and "march" cluster together, while "algorithm" sits far away.
 
 The model also adds positional encodings so it knows word order. Without this, "dog bites man" and "man bites dog" would look identical. These positional encodings affect attention patterns in ways we'll revisit later.
 
@@ -261,11 +263,13 @@ Without chain-of-thought, the model must jump from question to answer with no in
 
 ## See It In Action
 
-To make this concrete, I've built interactive visualizations that walk through both the attention mechanism and next token prediction step by step.
+To make this concrete, I've built interactive visualizations that walk through the attention mechanism, embedding space, and next token prediction step by step.
 
-**[View the Attention Visualizer](https://brewinvaz.github.io/substack/2026-01-23-attention/visualizer/)** - Watch tokens get embedded, split into Q/K/V, compute attention scores, and produce outputs.
+**[View the Embedding Space Explorer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/embeddings)** - Click any two words to see their cosine similarity. Explore how semantically similar words cluster together.
 
-**[View the Prediction Visualizer](https://brewinvaz.github.io/substack/2026-01-23-attention/visualizer/prediction)** - See how temperature, softmax, and sampling strategies turn attention outputs into generated text.
+**[View the Attention Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/)** - Watch tokens get embedded, split into Q/K/V, compute attention scores, and produce outputs.
+
+**[View the Prediction Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/prediction)** - See how temperature, softmax, and sampling strategies turn attention outputs into generated text.
 
 ## From Theory to Practice: Why Prompting Techniques Work
 
