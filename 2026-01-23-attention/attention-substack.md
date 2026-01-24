@@ -386,7 +386,9 @@ You're not coaxing a mysterious intelligence. You're providing inputs to a well-
 
 ---
 
-**Further Reading**: Vaswani et al., "[Attention Is All You Need](https://arxiv.org/abs/1706.03762)" (2017), the original transformer paper. Jay Alammar's "[The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/)" for excellent visual explanations.
+**Further Reading**
+- Vaswani et al., "[Attention Is All You Need](https://arxiv.org/abs/1706.03762)" (2017), the original transformer paper
+- Jay Alammar's "[The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/)" for excellent visual explanations
 
 ---
 
