@@ -106,10 +106,16 @@ $$\text{softmax}(x_i) = \frac{e^{x_i}}{\sum_j e^{x_j}}$$
 Applied row-by-row, this transforms each row of scores into a probability distribution:
 
 ```
-For "sat" row:  Scores  [-1.2, 1.8, 0.2, -0.5, -1.5, 1.4]
-                   ↓ softmax
-               Weights  [0.02, 0.49, 0.10, 0.05, 0.02, 0.33]  (sums to 1.0)
-                         The   cat   sat   on    the   mat
+For "sat" row:
+
+Token  │ Score │ Weight
+───────┼───────┼───────
+The    │ -1.2  │   2%
+cat    │  1.8  │  49%
+sat    │  0.2  │  10%
+on     │ -0.5  │   5%
+the    │ -1.5  │   2%
+mat    │  1.4  │  33%
 ```
 
 Now "sat" attends strongly to "cat" with weight 0.49 (49%) and "mat" with 0.33 (33%), while nearly ignoring "The" and "the" (2% each). This makes sense: to understand the verb "sat," the model needs to know the subject and location.
@@ -124,14 +130,22 @@ Finally, each token's output is computed by taking a weighted combination of all
 
 $$\text{Output} = \text{Attention\_Weights} \cdot V$$
 
-For "sat" with weights [0.02, 0.49, 0.10, 0.05, 0.02, 0.33]:
+For "sat," the output blends all Value vectors weighted by attention:
 
 ```
-Output("sat") = 0.02×V("The") + 0.49×V("cat") + 0.10×V("sat")
-              + 0.05×V("on") + 0.02×V("the") + 0.33×V("mat")
+Output("sat") = weighted sum of all Values
+
+Token  │ Weight │ Contribution
+───────┼────────┼─────────────────────────
+cat    │  49%   │ ████████████████████ (subject)
+mat    │  33%   │ █████████████ (location)
+sat    │  10%   │ ████ (self)
+on     │   5%   │ ██
+The    │   2%   │ █
+the    │   2%   │ █
 ```
 
-The output for "sat" is now dominated by information from "cat" (49%) and "mat" (33%). The model has learned that to understand a verb, it needs to know WHO did it and WHERE.
+The output for "sat" is dominated by information from "cat" (49%) and "mat" (33%). The model learned that to understand a verb, it needs to know WHO did it and WHERE.
 
 **The complete attention formula** (single head):
 
@@ -145,22 +159,28 @@ This single equation is the heart of the transformer. A token's output is no lon
 
 **What this step does**: Run attention multiple times in parallel, with each "head" learning different relationship types (grammar, meaning, etc.).
 
-The model doesn't run this process once. It runs it multiple times in parallel with different learned projections, called "heads." Each head has its own $W_Q$, $W_K$, and $W_V$ matrices:
+The model doesn't run attention just once. It runs it multiple times in parallel with different learned weights, called "heads." Each head has its own $W_Q$, $W_K$, and $W_V$ matrices, so each head learns to look for different relationships.
 
-$$\text{MultiHead} = \text{Concat}(\text{head}_1, \text{head}_2, \ldots, \text{head}_h) \cdot W_O$$
-
-$$\text{head}_i = \text{Attention}(X \cdot W_{Q_i}, X \cdot W_{K_i}, X \cdot W_{V_i})$$
-
-With 8 heads (typical for smaller models), each head can learn to capture different relationships:
+With 8 heads (typical for smaller models), each head can specialize:
 - Head 1 might track subject-verb relationships
-- Head 2 might handle coreference ("it" → "cat")
+- Head 2 might handle coreference ("it" refers to "cat")
 - Head 3 might capture syntactic structure
 - Head 4 might focus on adjacent words
 - And so on...
 
-The outputs from all heads get concatenated and projected back by $W_O$. This gives the model multiple ways to relate tokens to each other simultaneously.
+Each head computes attention independently using its own learned weights:
+
+$$\text{head}_i = \text{Attention}(X \cdot W_{Q_i}, X \cdot W_{K_i}, X \cdot W_{V_i})$$
+
+Then all head outputs are concatenated and projected through $W_O$:
+
+$$\text{MultiHead} = \text{Concat}(\text{head}_1, \text{head}_2, \ldots, \text{head}_h) \cdot W_O$$
+
+The output projection $W_O$ is a learned weight matrix that combines the concatenated results back into a single representation. It lets the model mix insights from all heads: "Head 1 found the subject, Head 3 found the syntactic role, now blend them together."
 
 **Outcome**: The model captures many relationship types at once - grammar, meaning, and context - giving it a rich understanding of how all words relate to each other.
+
+> **Try it**: The [Multi-Head Attention Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/multihead.html) shows how different heads learn different patterns and how their outputs combine through the $W_O$ projection.
 
 **Note on Feed-Forward Networks**: After attention mixes information *between* tokens, each token passes through a feed-forward network that processes it *individually*. This is where much of the model's factual "knowledge" is stored. The combination of attention (mixing) and feed-forward (processing) repeats across many layers.
 
@@ -270,6 +290,8 @@ To make this concrete, I've built interactive visualizations that walk through t
 **[View the Embedding Space Explorer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/embeddings)** - Click any two words to see their cosine similarity. Explore how semantically similar words cluster together.
 
 **[View the Attention Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/)** - Watch tokens get embedded, split into Q/K/V, compute attention scores, and produce outputs.
+
+**[View the Multi-Head Attention Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/multihead)** - See how multiple heads learn different relationship types and combine through the output projection.
 
 **[View the Prediction Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/prediction)** - See how temperature, softmax, and sampling strategies turn attention outputs into generated text.
 
