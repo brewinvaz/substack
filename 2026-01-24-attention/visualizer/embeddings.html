@@ -7,6 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <style>
         :root {
             --void: #0a0a0f;
@@ -529,6 +531,87 @@
             opacity: 0.7;
         }
 
+        /* View toggle */
+        .view-toggle {
+            display: flex;
+            border: 1px solid rgba(107, 107, 138, 0.3);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .toggle-btn {
+            background: transparent;
+            border: none;
+            color: var(--star-dim);
+            padding: 0.6rem 1rem;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-btn:first-child {
+            border-right: 1px solid rgba(107, 107, 138, 0.3);
+        }
+
+        .toggle-btn:hover {
+            color: var(--star-white);
+            background: rgba(240, 240, 255, 0.05);
+        }
+
+        .toggle-btn.active {
+            background: rgba(240, 240, 255, 0.15);
+            color: var(--star-white);
+        }
+
+        .control-divider {
+            width: 1px;
+            background: rgba(107, 107, 138, 0.2);
+            margin: 0 0.5rem;
+        }
+
+        /* 3D canvas */
+        #canvas3d {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+
+        .space-container.mode-3d #canvas3d {
+            display: block;
+        }
+
+        .space-container.mode-3d .space-canvas,
+        .space-container.mode-3d .connections-layer,
+        .space-container.mode-3d .grid-overlay {
+            display: none;
+        }
+
+        .space-container.mode-3d .axis-x {
+            display: none;
+        }
+
+        .space-container.mode-3d .axis-y {
+            display: none;
+        }
+
+        /* 3D hint */
+        .hint-3d {
+            display: none;
+        }
+
+        .mode-3d-active .hint-3d {
+            display: inline;
+        }
+
+        .mode-3d-active .hint-2d {
+            display: none;
+        }
+
         /* Footer nav */
         .footer-nav {
             display: flex;
@@ -590,7 +673,7 @@
             <h1>The Embedding Space</h1>
             <p class="subtitle">
                 Words live in high-dimensional space. Similar meanings cluster together.
-                This is a 2D projection of where words actually "live" in an LLM.
+                Explore where words actually "live" in an LLM - toggle between 2D and 3D views.
             </p>
         </header>
 
@@ -610,16 +693,25 @@
         </div>
 
         <div class="controls">
+            <div class="view-toggle">
+                <button class="toggle-btn active" data-view="2d">2D</button>
+                <button class="toggle-btn" data-view="3d">3D</button>
+            </div>
+            <div class="control-divider"></div>
             <button class="control-btn active" data-mode="all">Show All</button>
             <button class="control-btn" data-mode="similar">Similar Pairs</button>
             <button class="control-btn" data-mode="different">Different Pairs</button>
         </div>
-        <p class="interaction-hint">Click any two words to compare their similarity. Click elsewhere to reset.</p>
+        <p class="interaction-hint" id="interactionHint">
+            <span class="hint-2d">Click any two words to compare their similarity. Click elsewhere to reset.</span>
+            <span class="hint-3d">Drag to rotate, scroll to zoom. Click any two words to compare similarity.</span>
+        </p>
 
-        <div class="space-container">
+        <div class="space-container" id="spaceContainer">
             <div class="grid-overlay"></div>
             <svg class="connections-layer" id="connections"></svg>
             <div class="space-canvas" id="spaceCanvas"></div>
+            <canvas id="canvas3d"></canvas>
             <div class="axis axis-x">Semantic Dimension 1</div>
             <div class="axis axis-y">Semantic Dimension 2</div>
             <div class="distance-tooltip" id="tooltip">
@@ -1105,12 +1197,319 @@
             });
         }
 
-        // Initialize
+        // ============ 3D VISUALIZATION ============
+        let scene, camera, renderer, controls;
+        let wordMeshes = [];
+        let lineMeshes = [];
+        let labels = [];
+        let is3DMode = false;
+        let selected3DWord1 = null;
+        let selected3DWord2 = null;
+        let raycaster, mouse;
+
+        // 3D positions for words (spread out in 3D space)
+        const words3D = words.map(w => ({
+            ...w,
+            x3d: (w.x - 0.5) * 8,
+            y3d: (0.5 - w.y) * 6,
+            z3d: getClusterZ(w.cluster)
+        }));
+
+        function getClusterZ(cluster) {
+            const zPositions = {
+                movement: -2,
+                animal: 2,
+                abstract: -1,
+                place: 1
+            };
+            return zPositions[cluster] + (Math.random() - 0.5) * 1.5;
+        }
+
+        function getClusterColorHex(cluster) {
+            const colors = {
+                movement: 0x4ade80,
+                animal: 0xf97316,
+                abstract: 0xa78bfa,
+                place: 0x38bdf8
+            };
+            return colors[cluster] || 0x6b6b8a;
+        }
+
+        function init3D() {
+            const container = document.getElementById('spaceContainer');
+            const canvas = document.getElementById('canvas3d');
+            const rect = container.getBoundingClientRect();
+
+            // Scene
+            scene = new THREE.Scene();
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(60, rect.width / rect.height, 0.1, 1000);
+            camera.position.set(0, 2, 12);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            renderer.setSize(rect.width, rect.height);
+            renderer.setPixelRatio(window.devicePixelRatio);
+
+            // Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 5;
+            controls.maxDistance = 30;
+
+            // Raycaster for click detection
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            // Create word spheres
+            words3D.forEach((wordData, index) => {
+                // Sphere
+                const geometry = new THREE.SphereGeometry(0.15, 16, 16);
+                const material = new THREE.MeshBasicMaterial({
+                    color: getClusterColorHex(wordData.cluster),
+                    transparent: true,
+                    opacity: 0.9
+                });
+                const sphere = new THREE.Mesh(geometry, material);
+                sphere.position.set(wordData.x3d, wordData.y3d, wordData.z3d);
+                sphere.userData = { word: wordData.word, cluster: wordData.cluster, index };
+                scene.add(sphere);
+                wordMeshes.push(sphere);
+
+                // Glow
+                const glowGeometry = new THREE.SphereGeometry(0.25, 16, 16);
+                const glowMaterial = new THREE.MeshBasicMaterial({
+                    color: getClusterColorHex(wordData.cluster),
+                    transparent: true,
+                    opacity: 0.2
+                });
+                const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+                glow.position.copy(sphere.position);
+                scene.add(glow);
+
+                // Text label using sprite
+                const label = createTextSprite(wordData.word, getClusterColorHex(wordData.cluster));
+                label.position.set(wordData.x3d, wordData.y3d + 0.4, wordData.z3d);
+                label.userData = { word: wordData.word };
+                scene.add(label);
+                labels.push(label);
+            });
+
+            // Create connection lines
+            createConnectionLines3D();
+
+            // Add ambient light
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            // Click handler
+            canvas.addEventListener('click', on3DClick, false);
+
+            // Handle resize
+            window.addEventListener('resize', on3DResize);
+
+            animate3D();
+        }
+
+        function createTextSprite(text, color) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 256;
+            canvas.height = 64;
+
+            context.font = 'Bold 32px DM Mono, monospace';
+            context.fillStyle = '#' + color.toString(16).padStart(6, '0');
+            context.textAlign = 'center';
+            context.fillText(text, 128, 40);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.needsUpdate = true;
+
+            const spriteMaterial = new THREE.SpriteMaterial({
+                map: texture,
+                transparent: true
+            });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.scale.set(2, 0.5, 1);
+            return sprite;
+        }
+
+        function createConnectionLines3D() {
+            // Clear existing lines
+            lineMeshes.forEach(line => scene.remove(line));
+            lineMeshes = [];
+
+            words3D.forEach((word1, i) => {
+                words3D.forEach((word2, j) => {
+                    if (i >= j) return;
+
+                    const similarity = getSimilarity(word1.word, word2.word);
+                    if (similarity > 0.5 || (word1.cluster !== word2.cluster && similarity < 0.3)) {
+                        const material = new THREE.LineBasicMaterial({
+                            color: similarity > 0.5 ? getClusterColorHex(word1.cluster) : 0x6b6b8a,
+                            transparent: true,
+                            opacity: 0.15
+                        });
+                        const points = [
+                            new THREE.Vector3(word1.x3d, word1.y3d, word1.z3d),
+                            new THREE.Vector3(word2.x3d, word2.y3d, word2.z3d)
+                        ];
+                        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                        const line = new THREE.Line(geometry, material);
+                        line.userData = { words: `${word1.word}-${word2.word}`, similarity };
+                        scene.add(line);
+                        lineMeshes.push(line);
+                    }
+                });
+            });
+        }
+
+        function on3DClick(event) {
+            const canvas = document.getElementById('canvas3d');
+            const rect = canvas.getBoundingClientRect();
+
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(wordMeshes);
+
+            if (intersects.length > 0) {
+                const clickedMesh = intersects[0].object;
+                const word = clickedMesh.userData.word;
+
+                if (selected3DWord1 === word && !selected3DWord2) {
+                    // Deselect
+                    clear3DSelection();
+                    return;
+                }
+
+                if (selected3DWord1 && selected3DWord2) {
+                    clear3DSelection();
+                }
+
+                if (!selected3DWord1) {
+                    selected3DWord1 = word;
+                    highlightWord3D(word, true);
+                } else if (selected3DWord1 !== word) {
+                    selected3DWord2 = word;
+                    highlightWord3D(word, true);
+                    showConnection3D(selected3DWord1, selected3DWord2);
+                    showFixedTooltip3D(selected3DWord1, selected3DWord2);
+                }
+            } else {
+                clear3DSelection();
+            }
+        }
+
+        function highlightWord3D(word, highlight) {
+            wordMeshes.forEach(mesh => {
+                if (mesh.userData.word === word) {
+                    mesh.scale.setScalar(highlight ? 1.5 : 1);
+                    mesh.material.opacity = highlight ? 1 : 0.9;
+                } else if (selected3DWord1 && selected3DWord2) {
+                    if (mesh.userData.word !== selected3DWord1 && mesh.userData.word !== selected3DWord2) {
+                        mesh.material.opacity = 0.2;
+                    }
+                }
+            });
+        }
+
+        function showConnection3D(word1, word2) {
+            lineMeshes.forEach(line => {
+                const words = line.userData.words;
+                if ((words === `${word1}-${word2}`) || (words === `${word2}-${word1}`)) {
+                    line.material.opacity = 0.8;
+                    line.material.linewidth = 3;
+                } else {
+                    line.material.opacity = 0.05;
+                }
+            });
+        }
+
+        function showFixedTooltip3D(word1, word2) {
+            const similarity = getSimilarity(word1, word2);
+            tooltipPair.innerHTML = `${word1} &harr; ${word2}`;
+            tooltipValue.textContent = similarity.toFixed(2);
+            tooltipBar.style.width = `${similarity * 100}%`;
+            tooltip.classList.add('visible', 'fixed');
+        }
+
+        function clear3DSelection() {
+            selected3DWord1 = null;
+            selected3DWord2 = null;
+
+            wordMeshes.forEach(mesh => {
+                mesh.scale.setScalar(1);
+                mesh.material.opacity = 0.9;
+            });
+
+            lineMeshes.forEach(line => {
+                line.material.opacity = 0.15;
+            });
+
+            hideTooltip();
+            tooltip.classList.remove('fixed');
+        }
+
+        function on3DResize() {
+            if (!is3DMode) return;
+            const container = document.getElementById('spaceContainer');
+            const rect = container.getBoundingClientRect();
+            camera.aspect = rect.width / rect.height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(rect.width, rect.height);
+        }
+
+        function animate3D() {
+            if (!is3DMode) return;
+            requestAnimationFrame(animate3D);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function switchTo3D() {
+            is3DMode = true;
+            document.getElementById('spaceContainer').classList.add('mode-3d');
+            document.querySelector('.interaction-hint').classList.add('mode-3d-active');
+
+            if (!scene) {
+                init3D();
+            } else {
+                animate3D();
+            }
+            on3DResize();
+        }
+
+        function switchTo2D() {
+            is3DMode = false;
+            document.getElementById('spaceContainer').classList.remove('mode-3d');
+            document.querySelector('.interaction-hint').classList.remove('mode-3d-active');
+            clear3DSelection();
+        }
+
+        // ============ INITIALIZATION ============
         document.addEventListener('DOMContentLoaded', () => {
             createStarfield();
             createWordNodes();
             createConnections();
             setupInteractivity();
+
+            // View toggle handlers
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    if (btn.dataset.view === '3d') {
+                        switchTo3D();
+                    } else {
+                        switchTo2D();
+                    }
+                });
+            });
         });
     </script>
 </body>

@@ -59,7 +59,7 @@ $$V = E \cdot W_V$$
 
 Where $W_Q$, $W_K$, and $W_V$ are weight matrices learned during training. Each token now has three vectors instead of one, letting it play different roles in the attention process.
 
-Think of it like a search engine. The Query is your search term. Keys are the index entries. Values are the actual content you retrieve.
+Imagine asking a question at a panel of experts. Your question is the Query. Each expert's area of expertise (on their name badge) is their Key. When your question about "market strategy" naturally resonates more with the business strategist than the chemist, you weigh their answers differently. What each expert tells you is their Value. You don't ignore anyone completely, but you listen more carefully to the relevant voices.
 
 **Outcome**: Each word can now "search" for relevant words (Query), "be found" by other words (Key), and "provide information" (Value).
 
@@ -70,6 +70,8 @@ Think of it like a search engine. The Query is your search term. Keys are the in
 Now the model figures out how much each token should "pay attention to" every other token. It does this by comparing each Query against all Keys using dot products:
 
 $$\text{Scores} = \frac{Q \cdot K^T}{\sqrt{d_k}}$$
+
+The dot product measures alignment between vectors. Through training, the model learns to give tokens Query vectors that align with the Key vectors of relevant tokens. High dot product = "what I'm looking for matches what you have."
 
 This produces an $n \times n$ matrix where $n$ is the number of tokens. Each cell (i,j) represents how much token i should attend to token j:
 
@@ -120,7 +122,7 @@ Now "sat" attends strongly to "cat" with weight 0.49 (49%) and "mat" with 0.33 (
 
 Finally, each token's output is computed by taking a weighted combination of all Value vectors:
 
-$$\text{Output} = \text{Attention\_weights} \cdot V$$
+$$\text{Output} = \text{Attention\_Weights} \cdot V$$
 
 For "sat" with weights [0.02, 0.49, 0.10, 0.05, 0.02, 0.33]:
 
