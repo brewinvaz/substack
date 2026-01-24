@@ -2,13 +2,17 @@
 
 *Understanding the mechanism behind LLMs transforms prompting from guesswork into engineering.*
 
-> **Note**: This article simplifies details for clarity. Real transformer implementations include additional components and optimizations not covered here. The core attention mechanism described is accurate, but production models are more complex.
+> **Note**: This article simplifies details for clarity. Real transformer implementations include additional components and optimizations not covered here. The core attention mechanism described is accurate, but production models are more complex. All numerical examples are illustrative and simplified; real model values and attention patterns differ.
 
 ---
 
 The internet is full of prompting advice. "Be specific." "Use chain-of-thought." "Put important instructions at the beginning." These tips work, but rarely does anyone explain *why*. The result is cargo cult prompting: rituals that produce results without understanding.
 
 I'll explain how the attention mechanism actually works, then show why that knowledge makes popular prompting techniques make sense. Once you understand the machinery, you stop guessing and start engineering.
+
+> **Note on Model Type**: This article focuses on decoder-only models (like GPT and Claude) which use causal attention - each token can only attend to previous tokens, not future ones. Encoder models like BERT use bidirectional attention where tokens can attend to all positions.
+
+> **TL;DR for Business Readers**: Attention is how LLMs decide which words in your prompt matter when generating each word of output. Understanding this mechanism explains why prompting techniques like "be specific" and "chain-of-thought" actually work - and helps you write better prompts.
 
 > **Interactive Companion**: As you read, you can explore an [interactive attention visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/index.html) that demonstrates each step with animated examples.
 
@@ -57,7 +61,12 @@ $$Q = E \cdot W_Q$$
 $$K = E \cdot W_K$$
 $$V = E \cdot W_V$$
 
-Where $W_Q$, $W_K$, and $W_V$ are weight matrices learned during training. Each token now has three vectors instead of one, letting it play different roles in the attention process.
+Where:
+- $E$ has shape $(n \times d_{model})$ - one row per token
+- $W_Q$, $W_K$, $W_V$ have shape $(d_{model} \times d_k)$ - learned projections
+- $Q$, $K$, $V$ each have shape $(n \times d_k)$ - the projected representations
+
+Each token now has three vectors instead of one, letting it play different roles in the attention process.
 
 Imagine asking a question at a panel of experts. Your question is the Query. Each expert's area of expertise (on their name badge) is their Key. When your question about "market strategy" naturally resonates more with the business strategist than the chemist, you weigh their answers differently. What each expert tells you is their Value. You don't ignore anyone completely, but you listen more carefully to the relevant voices.
 
@@ -93,13 +102,17 @@ The division by $\sqrt{d_k}$ (where $d_k$ is the dimension of the key vectors) p
 
 **Outcome**: A grid showing how relevant each word is to every other word. "sat" scores high for "cat" (subject) and "mat" (location).
 
+> **Try it**: Watch the attention scores computed in real-time in the [Attention Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/index.html) (Step 4).
+
 ### Step 4: Softmax Normalization
 
 **What this step does**: Convert raw scores into percentages that sum to 100%, so each word knows exactly how much attention to give others.
 
 The raw attention scores get passed through a softmax function, which converts them into probabilities that sum to 1:
 
-$$\text{Attention\_weights} = \text{softmax}(\text{Scores})$$
+$$A = \text{softmax}(\text{Scores})$$
+
+Where $A$ is the attention weights matrix.
 
 $$\text{softmax}(x_i) = \frac{e^{x_i}}{\sum_j e^{x_j}}$$
 
@@ -122,13 +135,15 @@ Now "sat" attends strongly to "cat" with weight 0.49 (49%) and "mat" with 0.33 (
 
 **Outcome**: Each word has an "attention budget" of 100% distributed across all words based on relevance. This is the attention pattern.
 
+> **Try it**: See how softmax transforms raw scores into the attention pattern in the [Attention Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/index.html) (Step 5).
+
 ### Step 5: Weighted Combination of Values
 
 **What this step does**: Blend information from all words according to the attention percentages. If "sat" gives 49% attention to "cat," it absorbs 49% of "cat"'s information.
 
 Finally, each token's output is computed by taking a weighted combination of all Value vectors:
 
-$$\text{Output} = \text{Attention\_Weights} \cdot V$$
+$$\text{Output} = A \cdot V$$
 
 For "sat," the output blends all Value vectors weighted by attention:
 
@@ -184,6 +199,8 @@ The output projection $W_O$ is a learned weight matrix that combines the concate
 
 **Note on Feed-Forward Networks**: After attention mixes information *between* tokens, each token passes through a feed-forward network that processes it *individually*. This is where much of the model's factual "knowledge" is stored. The combination of attention (mixing) and feed-forward (processing) repeats across many layers.
 
+> **Continuing in the Prediction Visualizer**: The following steps (6-9) show how attention outputs become generated text. Explore these in the [Prediction Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/prediction.html).
+
 ### Step 6: Projecting to Vocabulary (The Prediction Head)
 
 **What this step does**: Project the enriched hidden state to get a score for every possible next word.
@@ -220,7 +237,15 @@ The same softmax function converts these scores into a probability distribution:
 
 $$P(\text{next\_token}) = \text{softmax}\left(\frac{\text{logits}}{\text{temperature}}\right)$$
 
-For "The cat sat on the," the distribution looks like:
+**Temperature** controls the "peakiness" of the distribution. Temperature scaling happens *before* softmax: dividing by a small temperature (like 0.3) multiplies all scores by ~3, exaggerating the differences between them before softmax normalizes. The already-higher score becomes relatively much higher.
+
+```
+Temperature = 0.3:   mat(72%) floor(21%) couch(5%)  → almost always "mat"
+Temperature = 1.0:   mat(15%) floor(12%) couch(8%)  → balanced sampling
+Temperature = 2.0:   mat(10%) floor(9%)  couch(7%)  → might pick "ottoman"
+```
+
+For "The cat sat on the" at temperature 1.0, the distribution looks like:
 
 ```
 "mat"       0.15  ████████████████
@@ -232,16 +257,6 @@ For "The cat sat on the," the distribution looks like:
 ```
 
 Semantically appropriate completions get high probabilities; nonsensical ones get near-zero.
-
-**Temperature** controls the "peakiness" of the distribution. Critically, temperature scaling happens *before* softmax: `softmax(logits / temperature)`.
-
-Dividing by a small temperature (like 0.3) multiplies all scores by ~3, exaggerating the differences between them before softmax normalizes. The already-higher score becomes relatively much higher.
-
-```
-Temperature = 0.3:   mat(72%) floor(21%) couch(5%)  → almost always "mat"
-Temperature = 1.0:   mat(15%) floor(12%) couch(8%)  → balanced sampling
-Temperature = 2.0:   mat(10%) floor(9%)  couch(7%)  → might pick "ottoman"
-```
 
 **Outcome**: A probability distribution over all possible next words. Temperature controls how peaked or flat this distribution is.
 
@@ -290,6 +305,35 @@ Without chain-of-thought, the model must jump from question to answer with no in
 ## See It In Action
 
 To make this concrete, I've built interactive visualizations that walk through the attention mechanism, embedding space, and next token prediction step by step.
+
+**The Full Pipeline at a Glance:**
+
+```
+Input Text
+    ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ TOKENIZATION: "The cat sat" → ["The", "cat", "sat"]             │
+└─────────────────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ EMBEDDINGS: Each token → 512-dim vector                         │
+└─────────────────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ ATTENTION: Q·K^T → Scores → Softmax → Weighted V combination    │
+│ (repeated across multiple heads and layers)                     │
+└─────────────────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ PROJECTION: Hidden state → Vocabulary logits → Softmax → Probs  │
+└─────────────────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ SAMPLING: Select next token, append to context, repeat          │
+└─────────────────────────────────────────────────────────────────┘
+    ↓
+Output Text
+```
 
 **[View the Embedding Space Explorer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/embeddings.html)** - Click any two words to see their cosine similarity. Explore how semantically similar words cluster together.
 
@@ -355,7 +399,7 @@ Every model has a maximum context length: 8K, 32K, 128K, or more tokens. This is
 
 ### Why Limits Exist
 
-Attention computes relationships between every pair of tokens. For $n$ tokens, that's $n^2$ comparisons. Double your context length and you quadruple the computation. This $O(n^2)$ scaling puts hard limits on practical context sizes.
+Attention computes relationships between every pair of tokens. For $n$ tokens, that's $n^2$ comparisons: each of the $n$ Query vectors must compute a dot product with all $n$ Key vectors. Double your context length and you quadruple the computation. This $O(n^2)$ scaling puts hard limits on practical context sizes.
 
 ### What Happens at the Limit
 

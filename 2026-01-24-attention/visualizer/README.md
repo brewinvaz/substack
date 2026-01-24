@@ -46,4 +46,4 @@ Then open `http://localhost:8000` in your browser.
 
 ## Part Of
 
-This visualizer accompanies the article ["Inside the Black Box: How Attention Works and Why It Makes You Better at Prompting"](../attention-focused-article.md).
+This visualizer accompanies the article ["Inside the Black Box: How Attention Works and Why It Makes You Better at Prompting"](../attention-substack.md).
