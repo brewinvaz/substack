@@ -1,48 +1,5 @@
 /* Prediction Visualizer - Additional Styles */
-
-/* ===== NAVIGATION ===== */
-.visualizer-nav {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-lg);
-    margin-bottom: var(--space-xl);
-    padding: var(--space-md);
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-subtle);
-    border-radius: 12px;
-}
-
-.nav-link {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    color: var(--cyan-bright);
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-    padding: var(--space-sm) var(--space-md);
-    border-radius: 8px;
-    transition: all 0.2s var(--ease-in-out);
-}
-
-.nav-link:hover {
-    background: var(--bg-elevated);
-    color: var(--cyan-glow);
-}
-
-.nav-icon {
-    width: 20px;
-    height: 20px;
-}
-
-.nav-current {
-    color: var(--text-primary);
-    font-weight: 600;
-    padding: var(--space-sm) var(--space-md);
-    background: var(--bg-elevated);
-    border-radius: 8px;
-}
+/* Navigation styles are in style.css */
 
 /* ===== STEP 1: CONTEXT INPUT ===== */
 .context-display {
@@ -58,7 +15,7 @@
     font-size: 0.65rem;
     font-weight: 600;
     letter-spacing: 0.15em;
-    color: var(--text-dim);
+    color: var(--text-tertiary);
 }
 
 .context-text {
@@ -120,7 +77,7 @@
 .enriched-token .token-index {
     font-family: var(--font-mono);
     font-size: 0.6rem;
-    color: var(--text-dim);
+    color: var(--text-tertiary);
 }
 
 .last-token-highlight {
@@ -184,7 +141,7 @@
     font-size: 0.7rem;
     font-weight: 600;
     letter-spacing: 0.1em;
-    color: var(--text-dim);
+    color: var(--text-tertiary);
     margin-bottom: var(--space-sm);
 }
 
@@ -218,7 +175,7 @@
 .arrow-label {
     font-family: var(--font-mono);
     font-size: 0.7rem;
-    color: var(--text-dim);
+    color: var(--text-tertiary);
 }
 
 .arrow-head svg {
@@ -325,7 +282,7 @@
     width: 200px;
     justify-content: space-between;
     font-size: 0.65rem;
-    color: var(--text-dim);
+    color: var(--text-tertiary);
 }
 
 .temp-label-low {
@@ -447,7 +404,7 @@
     font-size: 0.65rem;
     font-weight: 600;
     letter-spacing: 0.1em;
-    color: var(--text-dim);
+    color: var(--text-tertiary);
     margin-bottom: var(--space-sm);
     display: block;
 }
@@ -599,7 +556,7 @@
 }
 
 .sel-value.dim {
-    color: var(--text-dim);
+    color: var(--text-tertiary);
 }
 
 .selection-result {
@@ -662,7 +619,7 @@
     font-size: 0.65rem;
     font-weight: 600;
     letter-spacing: 0.1em;
-    color: var(--text-dim);
+    color: var(--text-tertiary);
 }
 
 .selected-word {
@@ -736,7 +693,7 @@
     font-size: 0.6rem;
     font-weight: 600;
     letter-spacing: 0.1em;
-    color: var(--text-dim);
+    color: var(--text-tertiary);
 }
 
 .gen-tokens {
@@ -860,13 +817,22 @@
 
 .mask-cell.masked {
     background: rgba(71, 85, 105, 0.3);
-    color: var(--text-dim);
+    color: var(--text-tertiary);
 }
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
     .projection-container {
         flex-direction: column;
+        gap: var(--space-md);
+    }
+
+    .hidden-state-box,
+    .logits-box {
+        min-width: auto;
+        width: 100%;
+        max-width: 280px;
+        padding: var(--space-md);
     }
 
     .projection-arrow {
@@ -878,8 +844,27 @@
         width: 60px;
     }
 
+    .temperature-control {
+        padding: var(--space-md);
+    }
+
+    .temp-slider-wrapper {
+        width: 100%;
+    }
+
+    .temperature-control input[type="range"] {
+        width: 100%;
+        max-width: 200px;
+    }
+
     .sampling-controls {
         flex-direction: column;
+        gap: var(--space-md);
+    }
+
+    .method-buttons {
+        flex-wrap: wrap;
+        justify-content: center;
     }
 
     .selection-visualization {
@@ -890,18 +875,149 @@
         max-width: 100%;
     }
 
+    .selection-result {
+        width: 100%;
+        max-width: 200px;
+    }
+
     .gen-step {
         flex-direction: column;
         gap: var(--space-md);
+        padding: var(--space-md);
     }
 
     .gen-arrow {
         transform: rotate(90deg);
     }
 
+    .gen-tokens {
+        justify-content: center;
+    }
+
+    .generation-controls {
+        flex-wrap: wrap;
+    }
+
+    .causal-mask-section {
+        padding: var(--space-md);
+        overflow-x: auto;
+    }
+
+    .mask-matrix {
+        min-width: max-content;
+    }
+
     .mask-cell {
         min-width: 32px;
         height: 28px;
         font-size: 0.55rem;
+    }
+
+    .probability-chart {
+        padding: 0 var(--space-sm);
+    }
+
+    .prob-token {
+        min-width: 60px;
+        font-size: 0.7rem;
+    }
+
+    .prob-value {
+        min-width: 45px;
+        font-size: 0.65rem;
+    }
+
+    .enriched-tokens-container {
+        gap: var(--space-sm);
+    }
+
+    .enriched-token {
+        padding: var(--space-sm) var(--space-md);
+    }
+
+    .enriched-token .token-text {
+        font-size: 0.95rem;
+    }
+
+    .context-text {
+        font-size: 1rem;
+        padding: var(--space-sm) var(--space-md);
+    }
+
+    .distribution-insight {
+        flex-direction: column;
+        text-align: center;
+        padding: var(--space-md);
+    }
+
+    .method-description {
+        font-size: 0.8rem;
+        padding: var(--space-sm) var(--space-md);
+    }
+}
+
+@media (max-width: 480px) {
+    .method-btn {
+        padding: var(--space-xs) var(--space-sm);
+        font-size: 0.65rem;
+    }
+
+    .mask-cell {
+        min-width: 28px;
+        height: 24px;
+        font-size: 0.5rem;
+    }
+
+    .prob-bar {
+        gap: var(--space-sm);
+    }
+
+    .prob-token {
+        min-width: 50px;
+        font-size: 0.65rem;
+    }
+
+    .prob-track {
+        height: 20px;
+    }
+
+    .sel-token {
+        min-width: 50px;
+        font-size: 0.65rem;
+    }
+
+    .sel-track {
+        height: 16px;
+    }
+
+    .sel-value {
+        min-width: 40px;
+        font-size: 0.6rem;
+    }
+
+    .selected-word {
+        font-size: 1.2rem;
+    }
+
+    .dice svg {
+        width: 36px;
+        height: 36px;
+    }
+
+    .gen-token {
+        font-size: 0.75rem;
+        padding: 2px var(--space-xs);
+    }
+
+    .gen-next {
+        font-size: 1rem;
+    }
+
+    .highlight-label {
+        font-size: 0.6rem;
+    }
+
+    .last-token-highlight {
+        margin-top: var(--space-md);
     }
 }

@@ -226,31 +226,45 @@ Why do residual connections matter? Without them, information tends to fade as i
 
 This pattern of attention (mixing between tokens) and feed-forward (processing each token) repeats across many layers. Each layer refines the representation a little more, building understanding incrementally.
 
+After passing through all these layers, each token position holds a **hidden state**: a vector that started as a simple word embedding but now encodes rich contextual information. The hidden state at position 5 ("the" in "The cat sat on the") doesn't just represent "the" anymore; it contains blended information about cats, sitting, and spatial relationships. These hidden states are what the model uses to predict what comes next.
+
 > **Continuing in the Prediction Visualizer**: The following steps (6-9) show how attention outputs become generated text. Explore these in the [Prediction Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/prediction.html).
 
 ### Step 6: Projecting to Vocabulary (The Prediction Head)
 
-**What this step does**: Project the enriched hidden state to get a score for every possible next word.
+**What this step does**: Project the final hidden state to get a score for every possible next word.
 
-After attention layers process the input, the model must actually generate output. The final hidden state (the model's internal representation after processing) at the last position gets projected from the model dimension (512) to vocabulary size (50,000+):
+After all transformer layers process the input, the model must generate output. But why only use the *last* position? In autoregressive language models, each position can only see tokens before it (due to masking). The last position is the only one that has "seen" the entire input sequence. Its hidden state is a 512-dimensional summary of everything the model knows about "The cat sat on the."
+
+To predict the next word, we need to score every word in the vocabulary. The model learns a **projection matrix** $W$ (512 × 50,000) where each column represents a word. Multiplying the hidden state by this matrix produces 50,000 scores - one for each word:
+
+$$\text{logits} = h \cdot W$$
+
+where $h$ is the hidden state vector (1 × 512) and $W$ is the projection matrix (512 × 50,000). The score for each word $i$ is the dot product between the hidden state and that word's column vector:
+
+$$\text{score}_i = \sum_{j=1}^{512} h_j \cdot W_{j,i}$$
+
+High scores indicate words that fit the context; low scores indicate poor fits.
+
+Think of it like this: the hidden state is a point in 512-dimensional space, and each vocabulary word is also a point in that space. The projection computes how well aligned the hidden state is with each word's direction. "Mat" might point in a similar direction to the hidden state (high score), while "refrigerator" points elsewhere (low score).
+
+Here's a simplified example with 4 dimensions instead of 512:
 
 ```
-[The] [cat] [sat] [on] [the]
-  ↓     ↓     ↓    ↓     ↓
-┌─────────────────────────────────┐
-│        Attention Layers         │
-│   (all tokens attend to each    │
-│    other, building context)     │
-└─────────────────────────────────┘
-  ↓     ↓     ↓    ↓     ↓
- h₁    h₂    h₃   h₄    h₅  ← hidden states (512-dim each)
-                        │
-                        │ only last position predicts next token
-                        ↓
-                  × W_vocab (512 × 50K)
-                        ↓
-                 logits (50,000 raw, unnormalized scores)
+Hidden state for "The cat sat on the": [0.8, 0.6, -0.2, 0.9]
+
+Vocabulary word vectors (learned during training):
+  "mat":          [0.7, 0.5, -0.1, 0.8]
+  "floor":        [0.5, 0.4, -0.3, 0.6]
+  "refrigerator": [-0.2, 0.1, 0.8, -0.4]
+
+Score = dot product (multiply corresponding elements, sum them):
+  "mat":          (0.8×0.7) + (0.6×0.5) + (-0.2×-0.1) + (0.9×0.8) = 1.60
+  "floor":        (0.8×0.5) + (0.6×0.4) + (-0.3×-0.2) + (0.9×0.6) = 1.24
+  "refrigerator": (0.8×-0.2) + (0.6×0.1) + (-0.2×0.8) + (0.9×-0.4) = -0.62
 ```
+
+The hidden state and "mat" point in similar directions, producing a high score (1.60). "Refrigerator" points in a different direction, producing a negative score (-0.62). The model repeats this calculation for all 50,000+ words simultaneously.
 
 > **Try it**: The [Prediction Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/prediction.html) animates this projection from hidden state to vocabulary logits (Step 2).
 
@@ -302,36 +316,53 @@ This is why the same prompt can give different outputs: sampling introduces rand
 
 ### Step 9: The Generation Loop (Autoregressive Generation)
 
-**What this step does**: Add the selected word to context and repeat the entire process.
+**What this step does**: Add the selected word to context and repeat from Step 1 (embedding).
 
-Once selected, the token appends to the context and attention runs again:
+Once selected, the token appends to the context and the full pipeline (Steps 1-8) runs again:
 
 ```
-Step 1: [The] [cat] [sat] [on] [the] → Attn → Predict → "mat"
-                                                          │
-Step 2: [The] [cat] [sat] [on] [the] [mat] → Attn → Predict → "."
-                                                          │
-Step 3: [The] [cat] [sat] [on] [the] [mat] [.] → Attn → Predict → ...
+Iteration 1: [The][cat][sat][on][the]              → Steps 1-8 → "mat"
+                                                                   ↓ append
+Iteration 2: [The][cat][sat][on][the] + [mat]      → Steps 1-8 → "."
+                                                                   ↓ append
+Iteration 3: [The][cat][sat][on][the][mat] + [.]   → Steps 1-8 → ...
 ```
+
+> **Try it**: The [Prediction Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/prediction.html) lets you generate tokens one at a time and watch the context grow.
 
 Each new token can attend to all previous tokens, including just-generated ones. Critically, tokens can only look backward (causal masking, which prevents each token from seeing tokens that come after it) - they can't see future tokens.
 
+**KV Caching: The Practical Optimization**
+
+In theory, each new token requires rerunning Steps 1-8 for the entire sequence. In practice, models use **KV caching** to avoid redundant computation. Here's the insight: when generating token 7, the Keys and Values for tokens 1-6 haven't changed - only token 7 is new.
+
+The model caches the K and V vectors from previous tokens. For each new token:
+- Compute Q, K, V only for the new token (Step 3)
+- Retrieve cached K, V for all previous tokens
+- Run attention using the new Q against all K, V (new + cached)
+- Cache the new token's K, V for future iterations
+
+This reduces generation from O(n²) to O(n) per token - a massive speedup for long sequences. When you see "context window" limits (4K, 8K, 128K tokens), KV cache memory is often the bottleneck.
+
 **Why Chain-of-Thought Works**
 
-When the model generates "Let me break this down. 17 × 20 = 340...", those intermediate tokens become new Keys and Values in the context. When computing the final answer, attention can reference the partial results:
+Chain-of-thought prompting asks the model to "show its work." Consider asking "What is 17 × 24?":
+
+Without CoT, the model must jump directly from question to answer - there's no working memory between tokens. But with CoT, the model generates intermediate steps:
 
 ```
-Generate "408": Attention can see "340" and "68" and "+"
-                → The numbers needed for addition are IN the context
+"17 × 24 = 17 × 20 + 17 × 4 = 340 + 68 = 408"
 ```
 
-Without chain-of-thought, the model must jump from question to answer with no intermediate storage. With it, reasoning tokens serve as working memory that attention reads from.
+Each intermediate token ("340", "+", "68") becomes a Key and Value in the context. When generating the final "408", attention can look back at these partial results - the numbers needed for addition are literally in the context window.
+
+Without chain-of-thought, the model must compute everything in its hidden state. With it, reasoning tokens serve as external working memory that attention reads from.
 
 **Outcome**: Text generated one token at a time, each becoming context for the next prediction. The autoregressive structure is why chain-of-thought works - intermediate tokens become working memory for attention.
 
 ## See It In Action
 
-To make this concrete, I've built interactive visualizations that walk through the attention mechanism, embedding space, and next token prediction step by step.
+You've seen the "Try it" links throughout - here's the complete picture. This diagram shows how all the pieces connect, and below you'll find quick links to each visualizer for easy reference.
 
 **The Full Pipeline at a Glance:**
 

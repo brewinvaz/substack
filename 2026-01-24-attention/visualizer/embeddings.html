@@ -18,44 +18,7 @@
             --cluster-place: #22d3ee;
         }
 
-        /* ===== NAVIGATION ===== */
-        .visualizer-nav {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: var(--space-lg);
-            margin-bottom: var(--space-xl);
-            padding: var(--space-md);
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-subtle);
-            border-radius: 12px;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-            color: var(--cyan-bright);
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            padding: var(--space-sm) var(--space-md);
-            border-radius: 8px;
-            transition: all 0.2s var(--ease-in-out);
-        }
-
-        .nav-link:hover {
-            background: var(--bg-elevated);
-            color: var(--cyan-glow);
-        }
-
-        .nav-current {
-            color: var(--text-primary);
-            font-weight: 600;
-            padding: var(--space-sm) var(--space-md);
-            background: var(--bg-elevated);
-            border-radius: 8px;
-        }
+        /* Navigation styles are in style.css */
 
         /* Embedding-specific styles */
 
@@ -127,8 +90,7 @@
             font-size: 0.6rem;
             letter-spacing: 0.1em;
             text-transform: uppercase;
-            color: var(--text-dim);
-            opacity: 0.5;
+            color: var(--text-tertiary);
         }
 
         .axis-x {
@@ -312,7 +274,7 @@
         }
 
         .distance-label {
-            color: var(--text-dim);
+            color: var(--text-tertiary);
             font-size: 0.65rem;
             letter-spacing: 0.1em;
             text-transform: uppercase;
@@ -347,7 +309,7 @@
             align-items: center;
             gap: 0.6rem;
             font-size: 0.75rem;
-            color: var(--text-dim);
+            color: var(--text-tertiary);
             cursor: pointer;
             transition: opacity 0.3s ease;
         }
@@ -386,7 +348,7 @@
         }
 
         .insight-text {
-            color: var(--text-dim);
+            color: var(--text-secondary);
             font-size: 0.85rem;
             line-height: 1.8;
         }
@@ -407,11 +369,13 @@
             border: 1px solid rgba(107, 107, 138, 0.1);
             padding: 1.2rem;
             border-radius: 2px;
+            text-align: center;
         }
 
         .example-words {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 0.5rem;
             margin-bottom: 0.8rem;
         }
@@ -424,13 +388,13 @@
         }
 
         .example-arrow {
-            color: var(--text-dim);
+            color: var(--text-tertiary);
             font-size: 1.2rem;
         }
 
         .example-score {
             font-size: 0.7rem;
-            color: var(--text-dim);
+            color: var(--text-tertiary);
         }
 
         .example-score span {
@@ -451,7 +415,7 @@
         .control-btn {
             background: transparent;
             border: 1px solid rgba(107, 107, 138, 0.3);
-            color: var(--text-dim);
+            color: var(--text-tertiary);
             padding: 0.6rem 1.2rem;
             font-family: var(--font-mono);
             font-size: 0.75rem;
@@ -476,9 +440,8 @@
         .interaction-hint {
             text-align: center;
             font-size: 0.75rem;
-            color: var(--text-dim);
+            color: var(--text-tertiary);
             margin: 0.5rem 0 1.5rem;
-            opacity: 0.7;
         }
 
         /* View toggle */
@@ -587,19 +550,151 @@
         @media (max-width: 768px) {
             .stats-bar {
                 flex-direction: column;
-                gap: 1.5rem;
+                gap: 1rem;
+                padding: var(--space-md);
+            }
+
+            .stat-value {
+                font-size: 1.2rem;
+            }
+
+            .stat-label {
+                font-size: 0.6rem;
             }
 
             .space-container {
-                height: 450px;
+                height: 400px;
+            }
+
+            .controls {
+                flex-wrap: wrap;
+                gap: 0.75rem;
+            }
+
+            .control-btn {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.65rem;
+            }
+
+            .view-toggle {
+                order: -1;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .toggle-btn {
+                flex: 1;
+                text-align: center;
+            }
+
+            .control-divider {
+                display: none;
             }
 
             .legend {
-                gap: 1rem;
+                gap: 0.75rem;
+            }
+
+            .legend-item {
+                font-size: 0.65rem;
             }
 
             .insight-examples {
                 grid-template-columns: 1fr;
+            }
+
+            .insight-panel {
+                padding: 1.5rem;
+            }
+
+            .insight-title {
+                font-size: 1.1rem;
+            }
+
+            .insight-text {
+                font-size: 0.8rem;
+            }
+
+            .word-core {
+                padding: 0.4rem 0.7rem;
+                font-size: 0.75rem;
+            }
+
+            .interaction-hint {
+                font-size: 0.65rem;
+            }
+
+            .distance-tooltip.fixed {
+                top: 0.75rem;
+                right: 0.75rem;
+                max-width: 180px;
+            }
+
+            .distance-value {
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-bar {
+                gap: 0.75rem;
+                padding: var(--space-sm);
+            }
+
+            .stat-value {
+                font-size: 1rem;
+            }
+
+            .space-container {
+                height: 350px;
+            }
+
+            .control-btn {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.6rem;
+            }
+
+            .toggle-btn {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.6rem;
+            }
+
+            .legend {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .legend-item {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .word-core {
+                padding: 0.3rem 0.5rem;
+                font-size: 0.65rem;
+            }
+
+            .word-node::before {
+                width: 4px;
+                height: 4px;
+            }
+
+            .example-card {
+                padding: 0.8rem;
+            }
+
+            .example-word {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.4rem;
+            }
+
+            .example-score {
+                font-size: 0.6rem;
+            }
+
+            .insight-panel {
+                padding: 1rem;
             }
         }
 

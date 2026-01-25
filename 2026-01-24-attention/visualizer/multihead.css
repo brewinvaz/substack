@@ -1,48 +1,5 @@
 /* Multi-Head Attention Visualizer Styles */
-
-/* ===== NAVIGATION ===== */
-.visualizer-nav {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-lg);
-    margin-bottom: var(--space-xl);
-    padding: var(--space-md);
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-subtle);
-    border-radius: 12px;
-}
-
-.nav-link {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    color: var(--cyan-bright);
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-    padding: var(--space-sm) var(--space-md);
-    border-radius: 8px;
-    transition: all 0.2s var(--ease-in-out);
-}
-
-.nav-link:hover {
-    background: var(--bg-elevated);
-    color: var(--cyan-glow);
-}
-
-.nav-icon {
-    width: 20px;
-    height: 20px;
-}
-
-.nav-current {
-    color: var(--text-primary);
-    font-weight: 600;
-    padding: var(--space-sm) var(--space-md);
-    background: var(--bg-elevated);
-    border-radius: 8px;
-}
+/* Navigation styles are in style.css */
 
 /* Head color palette */
 :root {
@@ -70,7 +27,7 @@
     font-size: 0.65rem;
     font-weight: 600;
     letter-spacing: 0.15em;
-    color: var(--text-dim);
+    color: var(--text-tertiary);
 }
 
 .sentence-text {
@@ -314,7 +271,7 @@
 }
 
 .example-arrow {
-    color: var(--text-dim);
+    color: var(--text-tertiary);
     font-size: 1.2rem;
 }
 
@@ -414,12 +371,13 @@
     width: 40px;
     height: 40px;
     color: var(--cyan-bright);
+    transform: rotate(90deg);
 }
 
 .concat-arrow-label {
     font-family: var(--font-mono);
     font-size: 0.7rem;
-    color: var(--text-dim);
+    color: var(--text-secondary);
 }
 
 .concat-result {
@@ -462,7 +420,7 @@
 .concat-result-dim {
     font-family: var(--font-mono);
     font-size: 0.7rem;
-    color: var(--text-dim);
+    color: var(--text-secondary);
 }
 
 /* Projection visualization */
@@ -567,7 +525,7 @@
 .matrix-dims {
     font-family: var(--font-mono);
     font-size: 0.65rem;
-    color: var(--text-dim);
+    color: var(--text-tertiary);
 }
 
 .projection-arrow {
@@ -624,7 +582,7 @@
 .projection-dim-label {
     font-family: var(--font-mono);
     font-size: 0.65rem;
-    color: var(--text-dim);
+    color: var(--text-tertiary);
 }
 
 /* Output insight - reuse from main styles but adjust */
@@ -661,6 +619,11 @@
     .heads-grid,
     .specializations-grid {
         grid-template-columns: 1fr;
+        gap: var(--space-md);
+    }
+
+    .head-card {
+        padding: var(--space-md);
     }
 
     .concat-inputs {
@@ -670,6 +633,11 @@
 
     .projection-flow {
         flex-direction: column;
+    }
+
+    .projection-arrow {
+        transform: rotate(90deg);
+        margin: var(--space-sm) 0;
     }
 
     .mini-cell {
@@ -683,5 +651,97 @@
         width: 26px;
         height: 26px;
         font-size: 0.45rem;
+    }
+
+    .mini-matrix-labels {
+        margin-left: 28px;
+    }
+
+    .sentence-text {
+        font-size: 1rem;
+        padding: var(--space-sm) var(--space-md);
+    }
+
+    .specialization-card {
+        padding: var(--space-md);
+    }
+
+    .attention-example {
+        flex-wrap: wrap;
+        gap: var(--space-sm);
+    }
+
+    .concat-head-output {
+        padding: var(--space-sm);
+    }
+
+    .concat-cell {
+        width: 12px;
+        height: 30px;
+    }
+
+    .concat-result-cell {
+        width: 8px;
+        height: 30px;
+    }
+
+    .projection-input,
+    .projection-output {
+        padding: var(--space-md);
+    }
+
+    .projection-cell {
+        width: 6px;
+        height: 28px;
+    }
+
+    .matrix-grid {
+        grid-template-columns: repeat(6, 1fr);
+    }
+
+    .output-insight {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .insight-text {
+        align-items: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .mini-cell {
+        width: 22px;
+        height: 22px;
+        font-size: 0.45rem;
+    }
+
+    .mini-matrix-label,
+    .mini-matrix-side-label {
+        width: 22px;
+        height: 22px;
+        font-size: 0.4rem;
+    }
+
+    .mini-matrix-labels {
+        margin-left: 24px;
+    }
+
+    .head-title {
+        font-size: 0.8rem;
+    }
+
+    .head-specialty {
+        font-size: 0.7rem;
+    }
+
+    .concat-arrow svg {
+        width: 30px;
+        height: 30px;
+    }
+
+    .example-word {
+        font-size: 0.7rem;
+        padding: var(--space-xs);
     }
 }
