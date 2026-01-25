@@ -4,62 +4,67 @@
 const TOKENS = ['The', 'cat', 'sat', 'on', 'the', 'mat'];
 
 // Each head has different attention patterns showing different "specializations"
+// CAUSAL ATTENTION: Each token only attends to itself and previous tokens (j <= i)
 const HEADS = [
     {
         name: 'Head 1',
         specialty: 'Subject-Verb relationships',
         description: 'Learns to connect verbs with their subjects. When processing "sat," this head strongly attends to "cat" to understand WHO is performing the action.',
-        example: { from: 'sat', to: 'cat', weight: '47%' },
+        example: { from: 'sat', to: 'cat', weight: '70%' },
         // Attention weights: each row is a query token, columns are key tokens
+        // Causal: positions j > i are always 0
         weights: [
-            [0.40, 0.15, 0.10, 0.10, 0.15, 0.10],  // The
-            [0.25, 0.20, 0.35, 0.05, 0.05, 0.10],  // cat -> attends to sat
-            [0.08, 0.47, 0.15, 0.08, 0.07, 0.15],  // sat -> attends to cat (subject)
-            [0.10, 0.10, 0.40, 0.15, 0.10, 0.15],  // on -> attends to sat
-            [0.30, 0.10, 0.10, 0.10, 0.20, 0.20],  // the
-            [0.10, 0.15, 0.30, 0.15, 0.15, 0.15],  // mat -> attends to sat
+            [1.00, 0.00, 0.00, 0.00, 0.00, 0.00],  // The -> only self
+            [0.40, 0.60, 0.00, 0.00, 0.00, 0.00],  // cat -> The, self
+            [0.10, 0.70, 0.20, 0.00, 0.00, 0.00],  // sat -> cat (subject)
+            [0.05, 0.20, 0.60, 0.15, 0.00, 0.00],  // on -> sat (verb)
+            [0.10, 0.15, 0.35, 0.15, 0.25, 0.00],  // the -> sat
+            [0.05, 0.15, 0.35, 0.15, 0.15, 0.15],  // mat -> sat (verb)
         ]
     },
     {
         name: 'Head 2',
-        specialty: 'Determiner-Noun relationships',
-        description: 'Learns to connect articles with their nouns. "The" attends to "cat" and "mat" to understand which nouns it modifies.',
-        example: { from: 'The', to: 'cat', weight: '52%' },
+        specialty: 'Coreference resolution',
+        description: 'Tracks what pronouns and references point to. If "it" appeared later, this head would connect it back to "cat" as the referent.',
+        example: { from: 'sat', to: 'cat', weight: '65%' },
+        // Causal: positions j > i are always 0
         weights: [
-            [0.15, 0.52, 0.08, 0.05, 0.05, 0.15],  // The -> attends to cat
-            [0.35, 0.25, 0.10, 0.10, 0.10, 0.10],  // cat -> attends to The
-            [0.10, 0.15, 0.20, 0.15, 0.10, 0.30],  // sat
-            [0.10, 0.10, 0.15, 0.20, 0.15, 0.30],  // on
-            [0.10, 0.10, 0.10, 0.10, 0.15, 0.45],  // the -> attends to mat
-            [0.10, 0.10, 0.10, 0.10, 0.40, 0.20],  // mat -> attends to the
+            [1.00, 0.00, 0.00, 0.00, 0.00, 0.00],  // The -> only self
+            [0.35, 0.65, 0.00, 0.00, 0.00, 0.00],  // cat -> self-reference
+            [0.15, 0.65, 0.20, 0.00, 0.00, 0.00],  // sat -> points to cat
+            [0.10, 0.45, 0.30, 0.15, 0.00, 0.00],  // on -> tracks cat
+            [0.10, 0.35, 0.20, 0.10, 0.25, 0.00],  // the -> tracks cat
+            [0.08, 0.40, 0.17, 0.10, 0.10, 0.15],  // mat -> points to cat
         ]
     },
     {
         name: 'Head 3',
-        specialty: 'Positional/Adjacent patterns',
-        description: 'Focuses on nearby tokens. Each token attends most strongly to its immediate neighbors, capturing local context.',
-        example: { from: 'on', to: 'the', weight: '38%' },
+        specialty: 'Syntactic structure',
+        description: 'Learns grammatical dependencies. Verbs find their subjects, prepositions find their objects, building the parse tree.',
+        example: { from: 'on', to: 'sat', weight: '55%' },
+        // Causal: positions j > i are always 0
         weights: [
-            [0.30, 0.40, 0.15, 0.05, 0.05, 0.05],  // The -> cat (next)
-            [0.30, 0.25, 0.30, 0.10, 0.03, 0.02],  // cat -> The, sat
-            [0.08, 0.35, 0.20, 0.25, 0.07, 0.05],  // sat -> cat, on
-            [0.05, 0.10, 0.30, 0.17, 0.30, 0.08],  // on -> sat, the
-            [0.05, 0.05, 0.10, 0.32, 0.18, 0.30],  // the -> on, mat
-            [0.05, 0.05, 0.08, 0.12, 0.35, 0.35],  // mat -> the
+            [1.00, 0.00, 0.00, 0.00, 0.00, 0.00],  // The -> only self
+            [0.60, 0.40, 0.00, 0.00, 0.00, 0.00],  // cat -> The (det-noun)
+            [0.15, 0.55, 0.30, 0.00, 0.00, 0.00],  // sat -> cat (verb-subject)
+            [0.05, 0.15, 0.55, 0.25, 0.00, 0.00],  // on -> sat (prep-verb)
+            [0.10, 0.15, 0.20, 0.25, 0.30, 0.00],  // the -> on (structure)
+            [0.05, 0.10, 0.20, 0.20, 0.30, 0.15],  // mat -> the (det-noun)
         ]
     },
     {
         name: 'Head 4',
-        specialty: 'Semantic similarity',
-        description: 'Groups semantically similar tokens. Nouns attend to other nouns, connecting "cat" and "mat" as related entities.',
-        example: { from: 'cat', to: 'mat', weight: '35%' },
+        specialty: 'Adjacent word patterns',
+        description: 'Focuses on immediate neighbors. Captures local n-gram patterns and sequential dependencies between consecutive tokens.',
+        example: { from: 'cat', to: 'The', weight: '60%' },
+        // Causal: positions j > i are always 0, focus on previous token
         weights: [
-            [0.25, 0.10, 0.10, 0.10, 0.35, 0.10],  // The -> the (both determiners)
-            [0.10, 0.25, 0.10, 0.10, 0.10, 0.35],  // cat -> mat (both nouns)
-            [0.10, 0.15, 0.30, 0.25, 0.10, 0.10],  // sat -> on (both function words)
-            [0.10, 0.10, 0.30, 0.25, 0.15, 0.10],  // on -> sat
-            [0.30, 0.10, 0.10, 0.10, 0.25, 0.15],  // the -> The
-            [0.10, 0.35, 0.10, 0.10, 0.10, 0.25],  // mat -> cat (both nouns)
+            [1.00, 0.00, 0.00, 0.00, 0.00, 0.00],  // The -> only self
+            [0.60, 0.40, 0.00, 0.00, 0.00, 0.00],  // cat -> The (prev)
+            [0.10, 0.55, 0.35, 0.00, 0.00, 0.00],  // sat -> cat (prev)
+            [0.05, 0.15, 0.50, 0.30, 0.00, 0.00],  // on -> sat (prev)
+            [0.05, 0.10, 0.20, 0.40, 0.25, 0.00],  // the -> on (prev)
+            [0.05, 0.05, 0.10, 0.15, 0.45, 0.20],  // mat -> the (prev)
         ]
     }
 ];

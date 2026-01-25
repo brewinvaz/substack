@@ -543,6 +543,10 @@ You're not coaxing a mysterious intelligence. You're providing inputs to a well-
 
 ---
 
+**A note on multi-modal models**: The attention mechanism described here powers vision and video models too. Images are split into patches that become tokens; the Q/K/V mathematics stays identical. Cross-attention lets text tokens attend to image regions. If there's interest, a follow-up article can explore how transformers see.
+
+---
+
 **Further Reading**
 - Vaswani et al., "[Attention Is All You Need](https://arxiv.org/abs/1706.03762)" (2017), the original transformer paper
 - Wei et al., "[Chain-of-Thought Prompting Elicits Reasoning in Large Language Models](https://arxiv.org/abs/2201.11903)" (2022), the paper that introduced chain-of-thought prompting

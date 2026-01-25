@@ -6,12 +6,12 @@ const TOKENS = ['The', 'cat', 'sat', 'on', 'the', 'mat'];
 // Actual embedding vectors (simplified 4D for visualization)
 // Designed to create meaningful attention patterns
 const EMBEDDINGS = [
-    [0.9, 0.1, 0.2, 0.1],   // The - determiner (high dim 0)
-    [0.2, 0.9, 0.3, 0.8],   // cat - noun, animate (high dim 1, 3)
-    [0.3, 0.4, 0.9, 0.2],   // sat - verb (high dim 2)
-    [0.7, 0.1, 0.1, 0.5],   // on - preposition (moderate dim 0, 3)
-    [0.9, 0.1, 0.2, 0.1],   // the - same as The
-    [0.2, 0.8, 0.2, 0.9]    // mat - noun, inanimate (high dim 1, 3)
+    [0.2, 0.8, 0.1, 0.5],   // The - article
+    [0.9, 0.3, 0.7, 0.2],   // cat - noun, animate
+    [0.4, 0.6, 0.8, 0.3],   // sat - verb
+    [0.1, 0.4, 0.2, 0.9],   // on - preposition
+    [0.2, 0.8, 0.1, 0.5],   // the - same as The
+    [0.8, 0.2, 0.6, 0.4]    // mat - noun, inanimate
 ];
 
 // Q, K, V projection matrices (4x3)
@@ -71,19 +71,22 @@ function softmax(arr) {
 }
 
 // Pre-designed attention patterns that show meaningful relationships
+// CAUSAL ATTENTION: Each token only attends to itself and previous tokens (j <= i)
+// This matches how decoder-only LLMs (GPT, Claude) work
 const DESIGNED_ATTENTION_WEIGHTS = [
-    // The -> attends to itself and other determiner
-    [0.35, 0.12, 0.08, 0.05, 0.35, 0.05],
-    // cat -> attends to "The" (its determiner) and "sat" (its verb)
-    [0.30, 0.15, 0.35, 0.05, 0.05, 0.10],
-    // sat -> attends to "cat" (subject) and "mat" (object/location)
-    [0.05, 0.42, 0.10, 0.08, 0.03, 0.32],
-    // on -> attends to "sat" and "mat" (connects verb to location)
-    [0.05, 0.10, 0.30, 0.10, 0.05, 0.40],
-    // the -> attends to "mat" (its noun) and other determiner
-    [0.25, 0.05, 0.05, 0.10, 0.15, 0.40],
-    // mat -> attends to "the" (determiner), "on" (preposition), "sat" (verb)
-    [0.05, 0.10, 0.25, 0.20, 0.30, 0.10]
+    // The -> only sees itself (first token)
+    [1.00, 0.00, 0.00, 0.00, 0.00, 0.00],
+    // cat -> attends to "The" (its determiner) and itself
+    [0.65, 0.35, 0.00, 0.00, 0.00, 0.00],
+    // sat -> attends to "cat" (subject), with some attention to "The" and itself
+    // Article line 143: The: 2%, cat: 49%, sat: 10% (renormalized for causal)
+    [0.03, 0.80, 0.17, 0.00, 0.00, 0.00],
+    // on -> attends to "sat" (verb it modifies) and "cat" (subject)
+    [0.05, 0.25, 0.55, 0.15, 0.00, 0.00],
+    // the -> attends to earlier content, especially "cat" and "sat"
+    [0.10, 0.20, 0.30, 0.15, 0.25, 0.00],
+    // mat -> attends to "the" (determiner), "on" (preposition), "sat" (verb), "cat" (subject)
+    [0.05, 0.15, 0.25, 0.15, 0.25, 0.15]
 ];
 
 // Compute all values
