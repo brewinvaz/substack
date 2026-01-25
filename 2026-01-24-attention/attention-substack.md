@@ -451,6 +451,24 @@ Now that you understand the mechanism, let's look at common prompting advice and
 
 **Why it works**: When you write "Don't mention competitors," the tokens "mention" and "competitors" still enter the context. Attention doesn't understand negation the way humans do. Those tokens create Keys that later generation might match against. You've put the unwanted concept into the attention space.
 
+### Delimiters and Formatting
+
+**The advice**: Use XML tags, triple backticks, or markdown headers to separate prompt sections.
+
+**Why it works**: Delimiter tokens create structural boundaries. When attention computes relevance, these markers help segment the context. Instructions inside `<system>` tags get grouped together; code inside backticks stays distinct from prose. The delimiters become Keys that help Queries find the right section.
+
+### Output Priming
+
+**The advice**: Start the model's response for it: "Here is the JSON: {"
+
+**Why it works**: Primed tokens immediately become part of the context. The opening `{` creates a Key that subsequent generation attends to, biasing output toward valid JSON. You're seeding the attention space with the structure you want.
+
+### Temperature and Sampling
+
+**The advice**: Use lower temperature (0.0-0.3) for factual tasks, higher (0.7-1.0) for creative ones.
+
+**Why it works**: Attention produces logits for every possible next token. Temperature controls how sharply the probability distribution peaks. Low temperature makes the highest-probability token dominate; high temperature flattens the distribution, allowing more variety. This happens after attention, during the sampling step. Try the [Prediction Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/prediction.html) to see this in action.
+
 ## Context Windows and Their Limits
 
 Every model has a maximum context length: 8K, 32K, 128K, or more tokens. This isn't arbitrary.
@@ -501,8 +519,13 @@ Most API pricing is per-token. Attention must process every input token and gene
 | Q/K dot products find matches | Be specific and detailed |
 | Autoregressive generation | Chain-of-thought |
 | Pattern matching from context | Few-shot examples |
+| Format tokens as anchors | Structured output |
+| Priming attention weights | Role and persona |
 | Position-dependent weights | Instruction positioning |
 | Tokens activate as Keys | Avoid negation |
+| Delimiter tokens segment context | Use formatting/delimiters |
+| Primed tokens seed attention | Output priming |
+| Post-attention sampling | Temperature control |
 
 ## Conclusion
 
