@@ -151,9 +151,9 @@ Now "sat" attends strongly to "cat" with weight 0.49 (49%) and "mat" with 0.33 (
 
 ### Step 5: Weighted Combination of Values
 
-**What this step does**: Blend information from all words according to the attention percentages. If "sat" gives 49% attention to "cat," it absorbs 49% of "cat"'s information.
+**What this step does**: Blend information from all words according to the attention percentages. If "sat" gives 49% attention to "cat", it absorbs 49% of "cat"'s information.
 
-Finally, each token's output is computed by taking a weighted combination of all Value vectors:
+Using the attention weights from Step 4, each token blends information from all Value vectors:
 
 $$\text{Output} = A \cdot V$$
 
@@ -173,6 +173,8 @@ the    │   2%   │ █
 ```
 
 The output for "sat" is dominated by information from "cat" (49%) and "mat" (33%). The model learned that to understand a verb, it needs to know WHO did it and WHERE.
+
+What does "absorbing 49% of cat's information" actually mean? After this step, the representation of "sat" is no longer just about sitting in the abstract. It now carries semantic information about cats: the word "sat" has become "sat-by-a-cat." This enriched representation helps the model understand the sentence as a whole and predict what comes next.
 
 **The complete attention formula** (single head):
 
