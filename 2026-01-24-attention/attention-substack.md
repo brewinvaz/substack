@@ -10,7 +10,7 @@ The internet is full of prompting advice. "Be specific." "Use chain-of-thought."
 
 I'll explain how the attention mechanism actually works, then show why that knowledge makes popular prompting techniques make sense. Once you understand the machinery, you stop guessing and start engineering.
 
-> **Note on Model Type**: This article focuses on decoder-only models (like GPT and Claude) which use causal attention - each token can only attend to previous tokens, not future ones. Encoder models like BERT use bidirectional attention where tokens can attend to all positions.
+> **Note on Model Type**: This article focuses on decoder-only models which use causal attention - each token can only attend to previous tokens, not future ones. Encoder models like BERT use bidirectional attention where tokens can attend to all positions.
 
 > **TL;DR for Business Readers**: Attention is how LLMs decide which words in your prompt matter when generating each word of output. Understanding this mechanism explains why prompting techniques like "be specific" and "chain-of-thought" actually work - and helps you write better prompts.
 
@@ -41,7 +41,7 @@ Modern LLMs often use 512 to 4096 dimensions - enough axes to capture fine disti
 
 > **Try it**: The [Embedding Space Explorer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/embeddings.html) lets you click any two words and see their similarity score. Notice how "walk," "stroll," and "march" cluster together, while "algorithm" sits far away.
 
-The model also adds positional encodings so it knows word order. Without this, "dog bites man" and "man bites dog" would look identical. The original transformer paper used fixed sinusoidal functions to encode position, but most modern models (including GPT and Claude) learn position embeddings during training, which allows them to discover whatever positional patterns work best. These positional encodings affect attention patterns, as we'll see when computing attention scores in Step 3.
+The model also adds positional encodings so it knows word order. Without this, "dog bites man" and "man bites dog" would look identical. The original transformer paper used fixed sinusoidal functions to encode position, but most modern models learn position embeddings during training, which allows them to discover whatever positional patterns work best. These positional encodings affect attention patterns, as we'll see when computing attention scores in Step 3.
 
 **Outcome**: Each word is now a list of numbers encoding its meaning plus its position. The model can do math on words.
 
