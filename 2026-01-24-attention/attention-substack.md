@@ -76,7 +76,7 @@ Imagine asking a question at a panel of experts. Your question is the Query. Eac
 
 **What this step does**: Compare every word's search query against every other word's label to find which words should pay attention to each other.
 
-Now the model figures out how much each token should "pay attention to" every other token. It does this by comparing each Query against all Keys using dot products:
+Now the model figures out how much each token should "pay attention to" every other token. It does this by comparing each Query against all Keys using dot products (a measure of how aligned two vectors are):
 
 $$\text{Scores} = \frac{Q \cdot K^T}{\sqrt{d_k}}$$
 
@@ -212,7 +212,7 @@ A transformer layer includes more than just attention. Each layer follows a patt
 5. **Another residual connection** adds the input to the feed-forward output
 6. **Another layer normalization** stabilizes again
 
-The residual connections (also called "skip connections") are critical: they let gradients flow directly backward during training and allow layers to learn incremental refinements rather than complete transformations. Layer normalization keeps values in a stable range as they pass through dozens of layers.
+The residual connections (also called "skip connections") are critical: they let gradients (the signals used to train the model) flow directly backward during training and allow layers to learn incremental refinements rather than complete transformations. Layer normalization keeps values in a stable range as they pass through dozens of layers.
 
 The feed-forward network expands each token's representation to a larger dimension (typically 4x), applies a nonlinearity, then projects back down. This is where much of the model's factual "knowledge" is stored. Researchers have found that specific neurons in these networks activate for specific concepts.
 
@@ -224,7 +224,7 @@ The combination of attention (mixing) and feed-forward (processing) repeats acro
 
 **What this step does**: Project the enriched hidden state to get a score for every possible next word.
 
-After attention layers process the input, the model must actually generate output. The final hidden state at the last position gets projected from the model dimension (512) to vocabulary size (50,000+):
+After attention layers process the input, the model must actually generate output. The final hidden state (the model's internal representation after processing) at the last position gets projected from the model dimension (512) to vocabulary size (50,000+):
 
 ```
 [The] [cat] [sat] [on] [the]
@@ -241,7 +241,7 @@ After attention layers process the input, the model must actually generate outpu
                         ↓
                   × W_vocab (512 × 50K)
                         ↓
-                 logits (50,000 scores)
+                 logits (50,000 raw, unnormalized scores)
 ```
 
 > **Try it**: The [Prediction Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/prediction.html) animates this projection from hidden state to vocabulary logits (Step 2).
@@ -285,8 +285,8 @@ Semantically appropriate completions get high probabilities; nonsensical ones ge
 
 - **Greedy (temp=0)**: Always pick highest probability - deterministic, consistent
 - **Sampling (temp=1)**: Random sample weighted by probabilities - varied outputs
-- **Top-k**: Only consider the k highest-probability tokens, then sample
-- **Top-p (nucleus)**: Include tokens until cumulative probability reaches p, then sample
+- **Top-k**: Only consider the k most likely tokens (e.g., the top 50), then sample from those
+- **Top-p (nucleus sampling)**: Include tokens until their probabilities sum to p (e.g., 0.9), then sample from that set
 
 This is why the same prompt can give different outputs: sampling introduces randomness, and temperature controls how much.
 
@@ -306,7 +306,7 @@ Step 2: [The] [cat] [sat] [on] [the] [mat] → Attn → Predict → "."
 Step 3: [The] [cat] [sat] [on] [the] [mat] [.] → Attn → Predict → ...
 ```
 
-Each new token can attend to all previous tokens, including just-generated ones. Critically, tokens can only look backward (causal masking) - they can't see future tokens.
+Each new token can attend to all previous tokens, including just-generated ones. Critically, tokens can only look backward (causal masking, which prevents each token from seeing tokens that come after it) - they can't see future tokens.
 
 **Why Chain-of-Thought Works**
 
@@ -418,7 +418,7 @@ Every model has a maximum context length: 8K, 32K, 128K, or more tokens. This is
 
 ### Why Limits Exist
 
-Attention computes relationships between every pair of tokens. For $n$ tokens, that's $n^2$ comparisons: each of the $n$ Query vectors must compute a dot product with all $n$ Key vectors. Double your context length and you quadruple the computation. This $O(n^2)$ scaling puts hard limits on practical context sizes.
+Attention computes relationships between every pair of tokens. For $n$ tokens, that's $n^2$ comparisons: each of the $n$ Query vectors must compute a dot product with all $n$ Key vectors. Double your context length and you quadruple the computation. This quadratic ($O(n^2)$) scaling puts hard limits on practical context sizes.
 
 ### What Happens at the Limit
 
