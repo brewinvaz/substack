@@ -1,4 +1,4 @@
-# Inside the Black Box: How Attention Works and Why It Makes You Better at PromptingOutput Proj
+# Inside the Black Box: How Attention Works and Why It Makes You Better at Prompting
 
 *Understanding the mechanism behind LLMs transforms prompting from guesswork into engineering.*
 
@@ -57,6 +57,14 @@ Here's where attention begins. Each token's embedding gets transformed into thre
 
 Mathematically:
 
+For our 6-token sentence with 512-dimensional embeddings, here's what happens:
+
+- $E$ (embeddings): A table with 6 rows (one per token) and 512 columns (one per dimension)
+- $W_Q$ (query weights): A table with 512 rows and 64 columns - this "compresses" each token's 512 numbers into 64 numbers that represent "what am I looking for?"
+- Multiply $E \times W_Q \rightarrow Q$: A table with 6 rows and 64 columns - each token now has a 64-number Query vector
+
+The same process creates K (Keys) and V (Values), each also 6 × 64.
+
 $$Q = E \cdot W_Q$$
 $$K = E \cdot W_K$$
 $$V = E \cdot W_V$$
@@ -104,7 +112,7 @@ The division by $\sqrt{d_k}$ (where $d_k$ is the dimension of the key vectors) p
 
 **How Position Affects These Scores**
 
-Remember the positional encodings from Step 1? They're embedded in Q and K before this dot product, so attention scores reflect both meaning and position. Tokens often attend more strongly to nearby tokens because their positional components are similar. The model also learns position-dependent patterns—for instance, that words following "the" are typically nouns. This positional influence is why where you place instructions in a prompt matters: it directly affects these attention scores.
+Remember the positional encodings from Step 1? They're embedded in Q and K before this dot product, so attention scores reflect both meaning and position. Tokens often attend more strongly to nearby tokens because their positional components are similar. The model also learns position-dependent patterns - for instance, that words following "the" are typically nouns. This positional influence is why where you place instructions in a prompt matters: it directly affects these attention scores.
 
 > **Try it**: Watch the attention scores computed in real-time in the [Attention Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/index.html) (Step 4).
 
@@ -205,18 +213,16 @@ The output projection $W_O$ is a learned weight matrix that combines the concate
 
 A transformer layer includes more than just attention. Each layer follows a pattern:
 
-1. **Attention** mixes information *between* tokens
-2. **Residual connection** adds the original input back to the attention output
-3. **Layer normalization** stabilizes values to prevent them from exploding or vanishing
-4. **Feed-forward network** processes each token *individually* through two dense layers
+1. **Attention** mixes information *between* tokens (the mechanism we just covered)
+2. **Residual connection** adds the original input back to the attention output (like keeping a copy of your original notes while adding new annotations - this prevents information from getting lost as it passes through layers)
+3. **Layer normalization** stabilizes values to prevent them from exploding or vanishing (keeps all numbers in a reasonable range, like adjusting volume to stay within comfortable levels)
+4. **Feed-forward network** processes each token *individually* through two dense layers (a simple neural network that transforms each token's representation - this is where much of the model's "knowledge" is stored)
 5. **Another residual connection** adds the input to the feed-forward output
 6. **Another layer normalization** stabilizes again
 
-The residual connections (also called "skip connections") are critical: they let gradients (the signals used to train the model) flow directly backward during training and allow layers to learn incremental refinements rather than complete transformations. Layer normalization keeps values in a stable range as they pass through dozens of layers.
+Why do residual connections matter? Without them, information tends to fade as it passes through many layers, like a message getting garbled in a game of telephone. Residual connections keep the original signal intact.
 
-The feed-forward network expands each token's representation to a larger dimension (typically 4x), applies a nonlinearity, then projects back down. This is where much of the model's factual "knowledge" is stored. Researchers have found that specific neurons in these networks activate for specific concepts.
-
-The combination of attention (mixing) and feed-forward (processing) repeats across many layers, with each layer building on the representations from the previous one.
+This pattern of attention (mixing between tokens) and feed-forward (processing each token) repeats across many layers. Each layer refines the representation a little more, building understanding incrementally.
 
 > **Continuing in the Prediction Visualizer**: The following steps (6-9) show how attention outputs become generated text. Explore these in the [Prediction Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/prediction.html).
 
