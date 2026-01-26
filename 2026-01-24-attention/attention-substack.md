@@ -90,27 +90,25 @@ $$\text{Scores} = \frac{Q \cdot K^T}{\sqrt{d_k}}$$
 
 The dot product measures alignment between vectors. Through training, the model learns to give tokens Query vectors that align with the Key vectors of relevant tokens. High dot product = "what I'm looking for matches what you have."
 
-This produces an $n \times n$ matrix where $n$ is the number of tokens. Each cell (i,j) represents how much token i should attend to token j.
-
-In decoder-only models, **causal masking** prevents tokens from attending to future positions. Masked positions (shown as $-\infty$) become 0% after softmax:
+This produces an $n \times n$ matrix where $n$ is the number of tokens. Each cell (i,j) represents how relevant token j is to token i:
 
 ```
               The   cat   sat   on    the   mat
-       The  [ 1.5   -∞    -∞    -∞    -∞    -∞  ]
-       cat  [ 1.2   0.2   -∞    -∞    -∞    -∞  ]
-       sat  [-1.2   1.8   0.2   -∞    -∞    -∞  ]
-        on  [-0.9   0.1   1.2   0.2   -∞    -∞  ]
-       the  [ 0.8  -0.6  -0.7   0.3   0.4   -∞  ]
+       The  [ 1.5  -0.3  -0.8  -1.0   1.5  -1.2 ]
+       cat  [ 1.2   0.2   1.4  -0.9  -0.8   0.1 ]
+       sat  [-1.2   1.8   0.2  -0.5  -1.5   1.4 ]
+        on  [-0.9   0.1   1.2   0.2  -1.0   1.6 ]
+       the  [ 0.8  -0.6  -0.7   0.3   0.4   1.5 ]
        mat  [-1.0   0.2   0.9   0.7   1.2   0.1 ]
 ```
 
 *(These values are illustrative, not from an actual model. Real attention patterns emerge from learned weights and vary by context.)*
 
-Higher scores mean stronger attention. Notice "sat" has a high score for "cat" (1.8, the subject) but cannot see future tokens like "mat" due to causal masking.
+Higher scores mean stronger relevance. Notice "sat" has high scores for both "cat" (1.8, the subject) and "mat" (1.4, the location). However, in decoder-only models, **causal masking** will be applied before softmax to prevent attending to future tokens.
 
 The division by $\sqrt{d_k}$ (where $d_k$ is the dimension of the key vectors) prevents the dot products from getting too large, which would cause problems in the next step.
 
-**Outcome**: A grid showing how relevant each word is to every visible word. With causal masking, "sat" scores high for "cat" (the subject) but cannot see future tokens like "mat".
+**Outcome**: A grid showing relevance scores between all word pairs. Causal masking will be applied in the next step to prevent attending to future tokens.
 
 **How Position Affects These Scores**
 
@@ -120,29 +118,29 @@ Remember the positional encodings from Step 1? They're embedded in Q and K befor
 
 ### Step 4: Softmax Normalization
 
-**What this step does**: Convert raw scores into percentages that sum to 100%, so each word knows exactly how much attention to give others.
+**What this step does**: Apply causal masking, then convert scores into percentages that sum to 100%.
 
-The raw attention scores get passed through a softmax function, which converts them into probabilities that sum to 1:
+Before applying softmax, decoder-only models apply **causal masking**: positions where j > i (future tokens) are set to $-\infty$. This ensures each token can only attend to itself and previous tokens.
 
-$$A = \text{softmax}(\text{Scores})$$
+$$A = \text{softmax}(\text{MaskedScores})$$
 
 Where $A$ is the attention weights matrix.
 
 $$\text{softmax}(x_i) = \frac{e^{x_i}}{\sum_j e^{x_j}}$$
 
-Applied row-by-row, this transforms each row of scores into a probability distribution. Masked positions (future tokens) become 0%:
+Since $e^{-\infty} = 0$, masked positions contribute nothing to the sum and receive 0% attention. Applied row-by-row:
 
 ```
-For "sat" row (with causal masking):
+For "sat" row:
 
-Token  │ Score │ Weight
-───────┼───────┼───────
-The    │ -1.2  │   4%
-cat    │  1.8  │  80%
-sat    │  0.2  │  16%
-on     │  -∞   │   0%  (masked)
-the    │  -∞   │   0%  (masked)
-mat    │  -∞   │   0%  (masked)
+Token  │ Raw Score │ After Mask │ Weight
+───────┼───────────┼────────────┼───────
+The    │    -1.2   │    -1.2    │   4%
+cat    │     1.8   │     1.8    │  80%
+sat    │     0.2   │     0.2    │  16%
+on     │    -0.5   │     -∞     │   0%
+the    │    -1.5   │     -∞     │   0%
+mat    │     1.4   │     -∞     │   0%
 ```
 
 Now "sat" attends strongly to "cat" with weight 0.80 (80%), moderately to itself (16%), and weakly to "The" (4%). Future tokens receive 0% attention due to causal masking. This makes sense: to predict what comes after "sat," the model can only use information from words it has already seen.
@@ -159,22 +157,19 @@ Using the attention weights from Step 4, each token blends information from all 
 
 $$\text{Output} = A \cdot V$$
 
-For "sat," the output blends Value vectors from visible tokens (causal masking zeros out future tokens):
+For "sat," the output blends Value vectors from visible tokens only (masked positions contribute nothing):
 
 ```
 Output("sat") = weighted sum of visible Values
 
 Token  │ Weight │ Contribution
 ───────┼────────┼─────────────────────────
+The    │   4%   │ █
 cat    │  80%   │ ████████████████████ (subject)
 sat    │  16%   │ ████ (self)
-The    │   4%   │ █
-on     │   0%   │ (masked - future token)
-the    │   0%   │ (masked - future token)
-mat    │   0%   │ (masked - future token)
 ```
 
-The output for "sat" is dominated by information from "cat" (80%). The model learned that to understand a verb, it needs to know WHO is doing the action. Future context like "mat" isn't available during generation.
+The output for "sat" is dominated by information from "cat" (80%). The model learned that to understand a verb, it needs to know WHO is doing the action. Future tokens (on, the, mat) are masked and don't contribute.
 
 What does "absorbing 80% of cat's information" actually mean? After this step, the representation of "sat" is no longer just about sitting in the abstract. It now carries semantic information about cats: the word "sat" has become "sat-by-a-cat." This enriched representation helps the model understand the sentence so far and predict what comes next.
 

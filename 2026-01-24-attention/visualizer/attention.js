@@ -528,24 +528,35 @@ function renderSoftmax() {
             cell.className = 'attention-cell';
 
             const weight = ATTENTION_WEIGHTS[i][j];
-            cell.textContent = (weight * 100).toFixed(0) + '%';
-            cell.title = `Attention("${qToken}" → "${kToken}") = ${(weight * 100).toFixed(1)}%`;
+            const isMasked = j > i; // Causal masking: can't attend to future tokens
 
-            // Green gradient for weights - brighter for higher attention
-            const intensity = weight;
-            if (weight > 0.25) {
-                // High attention - bright emerald
-                cell.style.background = `rgba(16, 185, 129, ${0.4 + intensity})`;
-                cell.style.color = 'white';
-                cell.style.textShadow = '0 0 10px rgba(52, 211, 153, 0.5)';
-            } else if (weight > 0.1) {
-                // Medium attention
-                cell.style.background = `rgba(16, 185, 129, ${0.2 + intensity * 0.8})`;
-                cell.style.color = 'white';
-            } else {
-                // Low attention
-                cell.style.background = `rgba(71, 85, 105, ${0.3 + intensity})`;
+            if (isMasked) {
+                // Masked position - show -∞
+                cell.textContent = '-∞';
+                cell.title = `Causal mask: "${qToken}" (position ${i}) cannot attend to "${kToken}" (position ${j}) because ${j} > ${i}`;
+                cell.style.background = 'rgba(51, 51, 51, 0.5)';
                 cell.style.color = 'var(--text-tertiary)';
+                cell.style.fontStyle = 'italic';
+            } else {
+                cell.textContent = (weight * 100).toFixed(0) + '%';
+                cell.title = `Attention("${qToken}" → "${kToken}") = ${(weight * 100).toFixed(1)}%`;
+
+                // Green gradient for weights - brighter for higher attention
+                const intensity = weight;
+                if (weight > 0.25) {
+                    // High attention - bright emerald
+                    cell.style.background = `rgba(16, 185, 129, ${0.4 + intensity})`;
+                    cell.style.color = 'white';
+                    cell.style.textShadow = '0 0 10px rgba(52, 211, 153, 0.5)';
+                } else if (weight > 0.1) {
+                    // Medium attention
+                    cell.style.background = `rgba(16, 185, 129, ${0.2 + intensity * 0.8})`;
+                    cell.style.color = 'white';
+                } else {
+                    // Low attention
+                    cell.style.background = `rgba(71, 85, 105, ${0.3 + intensity})`;
+                    cell.style.color = 'var(--text-tertiary)';
+                }
             }
 
             matrix.appendChild(cell);
@@ -568,7 +579,15 @@ function renderWeighted() {
     const satIndex = 2;
     const weights = ATTENTION_WEIGHTS[satIndex];
 
+    let visibleIndex = 0;
     TOKENS.forEach((token, i) => {
+        const isMasked = i > satIndex; // Causal masking: can't attend to future tokens
+
+        if (isMasked) {
+            // Skip masked tokens - they contribute nothing
+            return;
+        }
+
         const term = document.createElement('div');
         term.className = 'weight-term';
 
@@ -607,7 +626,9 @@ function renderWeighted() {
 
         setTimeout(() => {
             term.classList.add('visible');
-        }, (i * 120) / speed);
+        }, (visibleIndex * 120) / speed);
+
+        visibleIndex++;
     });
 
     // Show result
@@ -643,11 +664,18 @@ function renderOutput() {
         vectorText.className = 'output-vector-text';
         vectorText.textContent = formatVector(OUTPUT_VECTORS[i], 3);
 
-        // Show all attention weights as a mini bar chart
+        // Show attention weights as a mini bar chart (only visible tokens)
         const attentionBars = document.createElement('div');
         attentionBars.className = 'attention-bars';
 
         ATTENTION_WEIGHTS[i].forEach((weight, j) => {
+            const isMasked = j > i; // Causal masking: can't attend to future tokens
+
+            if (isMasked) {
+                // Skip masked positions - they don't contribute
+                return;
+            }
+
             const bar = document.createElement('div');
             bar.className = 'attention-bar-item';
 
