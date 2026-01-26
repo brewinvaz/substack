@@ -70,22 +70,22 @@ function softmax(arr) {
     return exp.map(x => x / sum);
 }
 
-// Pre-designed attention patterns that show meaningful relationships
-// CAUSAL ATTENTION: Each token only attends to itself and previous tokens (j <= i)
-// This matches how decoder-only LLMs (GPT, Claude) work
+// Pre-designed attention patterns with CAUSAL MASKING
+// Each token only attends to itself and previous tokens (j <= i)
+// This matches how decoder-only LLMs (GPT, Claude) actually work
 const DESIGNED_ATTENTION_WEIGHTS = [
-    // The -> only sees itself (first token)
+    // The (pos 0) -> only sees itself
     [1.00, 0.00, 0.00, 0.00, 0.00, 0.00],
-    // cat -> attends to "The" (its determiner) and itself
-    [0.65, 0.35, 0.00, 0.00, 0.00, 0.00],
-    // sat -> attends to "cat" (subject), with some attention to "The" and itself
-    // Article line 143: The: 2%, cat: 49%, sat: 10% (renormalized for causal)
-    [0.03, 0.80, 0.17, 0.00, 0.00, 0.00],
-    // on -> attends to "sat" (verb it modifies) and "cat" (subject)
+    // cat (pos 1) -> attends to "The" (determiner) and itself
+    [0.35, 0.65, 0.00, 0.00, 0.00, 0.00],
+    // sat (pos 2) -> attends strongly to "cat" (subject), some to itself and "The"
+    // Scores: The=-1.2, cat=1.8, sat=0.2 -> softmax -> 4%, 80%, 16%
+    [0.04, 0.80, 0.16, 0.00, 0.00, 0.00],
+    // on (pos 3) -> attends to "sat" (verb) and "cat" (subject)
     [0.05, 0.25, 0.55, 0.15, 0.00, 0.00],
-    // the -> attends to earlier content, especially "cat" and "sat"
+    // the (pos 4) -> attends to earlier content
     [0.10, 0.20, 0.30, 0.15, 0.25, 0.00],
-    // mat -> attends to "the" (determiner), "on" (preposition), "sat" (verb), "cat" (subject)
+    // mat (pos 5) -> attends to all previous, especially "the" and "sat"
     [0.05, 0.15, 0.25, 0.15, 0.25, 0.15]
 ];
 

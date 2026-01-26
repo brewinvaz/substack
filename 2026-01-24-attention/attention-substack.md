@@ -24,7 +24,7 @@ Every modern LLM is built on the transformer architecture, and the transformer's
 
 **What this step does**: Convert your text into numerical representations that capture meaning.
 
-Your text gets split into tokens, which are roughly word-sized chunks. "The cat sat on the mat" becomes something like ["The", "cat", "sat", "on", "the", "mat"].
+Your text gets split into tokens, which are roughly word-sized chunks. "The cat sat on the mat" becomes something like ["The", "cat", "sat", "on", "the", "mat"]. The tokenization process can be reviewed separately, if there’s enough interest.
 
 Each token gets converted into a vector, a list of numbers representing that token's meaning. For a simplified 4-dimensional example:
 
@@ -90,25 +90,27 @@ $$\text{Scores} = \frac{Q \cdot K^T}{\sqrt{d_k}}$$
 
 The dot product measures alignment between vectors. Through training, the model learns to give tokens Query vectors that align with the Key vectors of relevant tokens. High dot product = "what I'm looking for matches what you have."
 
-This produces an $n \times n$ matrix where $n$ is the number of tokens. Each cell (i,j) represents how much token i should attend to token j:
+This produces an $n \times n$ matrix where $n$ is the number of tokens. Each cell (i,j) represents how much token i should attend to token j.
+
+In decoder-only models, **causal masking** prevents tokens from attending to future positions. Masked positions (shown as $-\infty$) become 0% after softmax:
 
 ```
               The   cat   sat   on    the   mat
-       The  [ 1.5  -0.3  -0.8  -1.0   1.5  -1.2 ]
-       cat  [ 1.2   0.2   1.4  -0.9  -0.8   0.1 ]
-       sat  [-1.2   1.8   0.2  -0.5  -1.5   1.4 ]
-        on  [-0.9   0.1   1.2   0.2  -1.0   1.6 ]
-       the  [ 0.8  -0.6  -0.7   0.3   0.4   1.5 ]
+       The  [ 1.5   -∞    -∞    -∞    -∞    -∞  ]
+       cat  [ 1.2   0.2   -∞    -∞    -∞    -∞  ]
+       sat  [-1.2   1.8   0.2   -∞    -∞    -∞  ]
+        on  [-0.9   0.1   1.2   0.2   -∞    -∞  ]
+       the  [ 0.8  -0.6  -0.7   0.3   0.4   -∞  ]
        mat  [-1.0   0.2   0.9   0.7   1.2   0.1 ]
 ```
 
 *(These values are illustrative, not from an actual model. Real attention patterns emerge from learned weights and vary by context.)*
 
-Higher scores mean stronger attention. Notice "sat" has high scores for "cat" (1.8, the subject) and "mat" (1.4, the location), but low scores for "The" (-1.2) and "the" (-1.5).
+Higher scores mean stronger attention. Notice "sat" has a high score for "cat" (1.8, the subject) but cannot see future tokens like "mat" due to causal masking.
 
 The division by $\sqrt{d_k}$ (where $d_k$ is the dimension of the key vectors) prevents the dot products from getting too large, which would cause problems in the next step.
 
-**Outcome**: A grid showing how relevant each word is to every other word. "sat" scores high for "cat" (subject) and "mat" (location).
+**Outcome**: A grid showing how relevant each word is to every visible word. With causal masking, "sat" scores high for "cat" (the subject) but cannot see future tokens like "mat".
 
 **How Position Affects These Scores**
 
@@ -128,53 +130,53 @@ Where $A$ is the attention weights matrix.
 
 $$\text{softmax}(x_i) = \frac{e^{x_i}}{\sum_j e^{x_j}}$$
 
-Applied row-by-row, this transforms each row of scores into a probability distribution:
+Applied row-by-row, this transforms each row of scores into a probability distribution. Masked positions (future tokens) become 0%:
 
 ```
-For "sat" row:
+For "sat" row (with causal masking):
 
 Token  │ Score │ Weight
 ───────┼───────┼───────
-The    │ -1.2  │   2%
-cat    │  1.8  │  49%
-sat    │  0.2  │  10%
-on     │ -0.5  │   5%
-the    │ -1.5  │   2%
-mat    │  1.4  │  33%
+The    │ -1.2  │   4%
+cat    │  1.8  │  80%
+sat    │  0.2  │  16%
+on     │  -∞   │   0%  (masked)
+the    │  -∞   │   0%  (masked)
+mat    │  -∞   │   0%  (masked)
 ```
 
-Now "sat" attends strongly to "cat" with weight 0.49 (49%) and "mat" with 0.33 (33%), while nearly ignoring "The" and "the" (2% each). This makes sense: to understand the verb "sat," the model needs to know the subject and location.
+Now "sat" attends strongly to "cat" with weight 0.80 (80%), moderately to itself (16%), and weakly to "The" (4%). Future tokens receive 0% attention due to causal masking. This makes sense: to predict what comes after "sat," the model can only use information from words it has already seen.
 
-**Outcome**: Each word has an "attention budget" of 100% distributed across all words based on relevance. This is the attention pattern.
+**Outcome**: Each word has an "attention budget" of 100% distributed across visible words (past and present) based on relevance. This is the attention pattern.
 
 > **Try it**: See how softmax transforms raw scores into the attention pattern in the [Attention Visualizer](https://brewinvaz.github.io/substack/2026-01-24-attention/visualizer/index.html) (Step 5).
 
 ### Step 5: Weighted Combination of Values
 
-**What this step does**: Blend information from all words according to the attention percentages. If "sat" gives 49% attention to "cat", it absorbs 49% of "cat"'s information.
+**What this step does**: Blend information from visible words according to the attention percentages. If "sat" gives 80% attention to "cat", it absorbs 80% of "cat"'s information.
 
 Using the attention weights from Step 4, each token blends information from all Value vectors:
 
 $$\text{Output} = A \cdot V$$
 
-For "sat," the output blends all Value vectors weighted by attention:
+For "sat," the output blends Value vectors from visible tokens (causal masking zeros out future tokens):
 
 ```
-Output("sat") = weighted sum of all Values
+Output("sat") = weighted sum of visible Values
 
 Token  │ Weight │ Contribution
 ───────┼────────┼─────────────────────────
-cat    │  49%   │ ████████████████████ (subject)
-mat    │  33%   │ █████████████ (location)
-sat    │  10%   │ ████ (self)
-on     │   5%   │ ██
-The    │   2%   │ █
-the    │   2%   │ █
+cat    │  80%   │ ████████████████████ (subject)
+sat    │  16%   │ ████ (self)
+The    │   4%   │ █
+on     │   0%   │ (masked - future token)
+the    │   0%   │ (masked - future token)
+mat    │   0%   │ (masked - future token)
 ```
 
-The output for "sat" is dominated by information from "cat" (49%) and "mat" (33%). The model learned that to understand a verb, it needs to know WHO did it and WHERE.
+The output for "sat" is dominated by information from "cat" (80%). The model learned that to understand a verb, it needs to know WHO is doing the action. Future context like "mat" isn't available during generation.
 
-What does "absorbing 49% of cat's information" actually mean? After this step, the representation of "sat" is no longer just about sitting in the abstract. It now carries semantic information about cats: the word "sat" has become "sat-by-a-cat." This enriched representation helps the model understand the sentence as a whole and predict what comes next.
+What does "absorbing 80% of cat's information" actually mean? After this step, the representation of "sat" is no longer just about sitting in the abstract. It now carries semantic information about cats: the word "sat" has become "sat-by-a-cat." This enriched representation helps the model understand the sentence so far and predict what comes next.
 
 **The complete attention formula** (single head):
 
@@ -182,7 +184,7 @@ $$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{Q \cdot K^T}{\sqrt{d_k}}
 
 This single equation is the heart of the transformer. A token's output is no longer just its own information. It's a blend of information from all tokens, weighted by relevance.
 
-**Outcome**: Each word now contains information from relevant words. "sat" carries info about WHO sat (cat) and WHERE (mat). Words are enriched with context.
+**Outcome**: Each word now contains information from visible words. "sat" carries info about WHO sat (cat) from the context seen so far. Words are enriched with past context.
 
 ### Multi-Head Attention
 
@@ -233,6 +235,8 @@ After passing through all these layers, each token position holds a **hidden sta
 ### Step 6: Projecting to Vocabulary (The Prediction Head)
 
 **What this step does**: Project the final hidden state to get a score for every possible next word.
+
+To see prediction in action, let's shift our example: imagine you've typed "The cat sat on the" and are watching the model complete your sentence. What happens inside?
 
 After all transformer layers process the input, the model must generate output. But why only use the *last* position? In autoregressive language models, each position can only see tokens before it (due to masking). The last position is the only one that has "seen" the entire input sequence. Its hidden state is a 512-dimensional summary of everything the model knows about "The cat sat on the."
 
