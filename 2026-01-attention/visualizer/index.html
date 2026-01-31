@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attention Mechanism Visualizer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="prediction.css">
+</head>
+<body>
+    <div class="grid-bg"></div>
+    <div class="scanline"></div>
+
+    <div class="container">
+        <header>
+            <div class="badge">TRANSFORMER ARCHITECTURE</div>
+            <h1>Attention Mechanism</h1>
+            <p class="subtitle">A step-by-step visualization of how transformers process language</p>
+            <p class="causal-note" style="font-size: 0.85rem; color: #94a3b8; margin-top: 0.5rem;">This visualizer uses <strong style="color: #10b981;">causal attention</strong> (each token only attends to previous tokens), matching how generative LLMs work.</p>
+        </header>
+
+        <nav class="visualizer-nav">
+            <a href="embeddings.html" class="nav-link">Embedding Space</a>
+            <span class="nav-current">Attention</span>
+            <a href="multihead.html" class="nav-link">Multi-Head</a>
+            <a href="prediction.html" class="nav-link">Prediction</a>
+        </nav>
+
+        <div class="control-panel">
+            <div class="control-group">
+                <button id="playPause" class="btn btn-primary">
+                    <svg class="icon play-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <svg class="icon pause-icon" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                    </svg>
+                    <span class="btn-text">Play</span>
+                </button>
+                <button id="stepBack" class="btn btn-secondary">
+                    <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+                    </svg>
+                </button>
+                <button id="stepForward" class="btn btn-secondary">
+                    <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+                    </svg>
+                </button>
+                <button id="reset" class="btn btn-secondary">
+                    <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="speed-control">
+                <label for="speed">SPEED</label>
+                <input type="range" id="speed" min="0.5" max="2" step="0.25" value="1">
+                <span id="speedValue" class="speed-value">1.0x</span>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-track">
+                <div class="progress-fill" id="progressFill"></div>
+                <div class="progress-glow" id="progressGlow"></div>
+            </div>
+            <div class="step-markers">
+                <div class="step-marker" data-step="1">1</div>
+                <div class="step-marker" data-step="2">2</div>
+                <div class="step-marker" data-step="3">3</div>
+                <div class="step-marker" data-step="4">4</div>
+                <div class="step-marker" data-step="5">5</div>
+                <div class="step-marker" data-step="6">6</div>
+                <div class="step-marker" data-step="7">7</div>
+            </div>
+            <div class="step-label" id="stepLabel">
+                <span class="step-num">01</span>
+                <span class="step-name">Tokenization</span>
+            </div>
+        </div>
+
+        <main class="visualization-area">
+            <!-- Step 1: Tokenization -->
+            <section class="step step-1" id="step1">
+                <div class="step-header">
+                    <h2><span class="step-icon">01</span> Tokenization</h2>
+                    <p class="step-desc">Input text is split into discrete tokens for processing</p>
+                </div>
+                <div class="input-display">
+                    <div class="input-label">INPUT</div>
+                    <div class="input-text" id="inputText">What is the capital of France?</div>
+                </div>
+                <div class="connection-line"></div>
+                <div class="tokens-container" id="tokensContainer"></div>
+            </section>
+
+            <!-- Step 2: Embeddings -->
+            <section class="step step-2" id="step2">
+                <div class="step-header">
+                    <h2><span class="step-icon">02</span> Embeddings</h2>
+                    <p class="step-desc">Each token is mapped to a high-dimensional vector representing its semantic meaning</p>
+                </div>
+                <div class="embeddings-container" id="embeddingsContainer"></div>
+            </section>
+
+            <!-- Step 3: Q, K, V Projections -->
+            <section class="step step-3" id="step3">
+                <div class="step-header">
+                    <h2><span class="step-icon">03</span> Query, Key, Value Projections</h2>
+                    <p class="step-desc">Each embedding is transformed into three distinct vectors through learned weight matrices</p>
+                </div>
+                <div class="qkv-container" id="qkvContainer">
+                    <div class="qkv-column query-column">
+                        <div class="qkv-header">
+                            <div class="qkv-indicator"></div>
+                            <h3>Query (Q)</h3>
+                        </div>
+                        <p class="qkv-desc">"What am I looking for?"</p>
+                        <div class="qkv-vectors" id="queryVectors"></div>
+                    </div>
+                    <div class="qkv-column key-column">
+                        <div class="qkv-header">
+                            <div class="qkv-indicator"></div>
+                            <h3>Key (K)</h3>
+                        </div>
+                        <p class="qkv-desc">"What do I contain?"</p>
+                        <div class="qkv-vectors" id="keyVectors"></div>
+                    </div>
+                    <div class="qkv-column value-column">
+                        <div class="qkv-header">
+                            <div class="qkv-indicator"></div>
+                            <h3>Value (V)</h3>
+                        </div>
+                        <p class="qkv-desc">"What information do I carry?"</p>
+                        <div class="qkv-vectors" id="valueVectors"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Step 4: Attention Scores -->
+            <section class="step step-4" id="step4">
+                <div class="step-header">
+                    <h2><span class="step-icon">04</span> Attention Scores</h2>
+                    <p class="step-desc">Compute relevance between each Query and all Keys via dot product</p>
+                </div>
+                <div class="formula-display">
+                    <code>Score[i,j] = Q[i] &middot; K[j] / &radic;d<sub>k</sub></code>
+                </div>
+                <div class="matrix-legend">
+                    <div class="legend-item legend-query">
+                        <span class="legend-dot"></span>
+                        <span class="legend-label">Query (rows)</span>
+                        <span class="legend-desc">"What am I looking for?"</span>
+                    </div>
+                    <div class="legend-item legend-key">
+                        <span class="legend-dot"></span>
+                        <span class="legend-label">Key (columns)</span>
+                        <span class="legend-desc">"What do I contain?"</span>
+                    </div>
+                </div>
+                <div class="matrix-container" id="scoresContainer">
+                    <div class="matrix-y-axis">
+                        <span class="axis-icon query-icon"></span>
+                        <span class="axis-text">QUERY</span>
+                    </div>
+                    <div class="matrix-wrapper">
+                        <div class="matrix-labels-top" id="keyLabels"></div>
+                        <div class="matrix-content">
+                            <div class="matrix-labels-side" id="queryLabels"></div>
+                            <div class="attention-matrix" id="attentionMatrix"></div>
+                        </div>
+                    </div>
+                    <div class="matrix-x-axis">
+                        <span class="axis-icon key-icon"></span>
+                        <span class="axis-text">KEY</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Step 5: Softmax -->
+            <section class="step step-5" id="step5">
+                <div class="step-header">
+                    <h2><span class="step-icon">05</span> Softmax Normalization</h2>
+                    <p class="step-desc">Convert raw scores to probability distribution (each row sums to 1.0)</p>
+                </div>
+                <div class="formula-display">
+                    <code>Attention[i] = softmax(Scores[i])</code>
+                </div>
+                <div class="matrix-legend">
+                    <div class="legend-item legend-query">
+                        <span class="legend-dot"></span>
+                        <span class="legend-label">Query (rows)</span>
+                        <span class="legend-desc">"What am I looking for?"</span>
+                    </div>
+                    <div class="legend-item legend-key">
+                        <span class="legend-dot"></span>
+                        <span class="legend-label">Key (columns)</span>
+                        <span class="legend-desc">"What do I contain?"</span>
+                    </div>
+                </div>
+                <div class="matrix-container" id="softmaxContainer">
+                    <div class="matrix-y-axis">
+                        <span class="axis-icon query-icon"></span>
+                        <span class="axis-text">QUERY</span>
+                    </div>
+                    <div class="matrix-wrapper">
+                        <div class="matrix-labels-top" id="softmaxKeyLabels"></div>
+                        <div class="matrix-content">
+                            <div class="matrix-labels-side" id="softmaxQueryLabels"></div>
+                            <div class="attention-matrix softmax-matrix" id="softmaxMatrix"></div>
+                        </div>
+                    </div>
+                    <div class="matrix-x-axis">
+                        <span class="axis-icon key-icon"></span>
+                        <span class="axis-text">KEY</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Step 6: Weighted Values -->
+            <section class="step step-6" id="step6">
+                <div class="step-header">
+                    <h2><span class="step-icon">06</span> Weighted Combination</h2>
+                    <p class="step-desc">Compute output as weighted sum of Value vectors based on attention weights</p>
+                </div>
+                <div class="weighted-container" id="weightedContainer">
+                    <div class="weighted-example" id="weightedExample">
+                        <div class="weighted-focus">
+                            <span class="focus-label">COMPUTING OUTPUT FOR</span>
+                            <div class="weighted-token" id="highlightedToken">France</div>
+                        </div>
+                        <div class="weighted-calculation" id="weightedCalc"></div>
+                        <div class="weighted-result" id="weightedResult"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Step 7: Output -->
+            <section class="step step-7" id="step7">
+                <div class="step-header">
+                    <h2><span class="step-icon">07</span> Contextual Outputs</h2>
+                    <p class="step-desc">Each token now carries contextual information from tokens it attended to</p>
+                </div>
+                <div class="output-container" id="outputContainer">
+                    <div class="output-tokens" id="outputTokens"></div>
+                    <div class="output-insight">
+                        <div class="insight-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/>
+                            </svg>
+                        </div>
+                        <p><strong>"France"</strong> now encodes information about <strong>"capital"</strong> (the concept being asked about)</p>
+                        <p class="insight-detail">With causal attention, "France" strongly attends to "capital" (35%). This relationship enables the model to predict <strong>"Paris"</strong> as the answer.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <div class="footer-content">
+                <a href="../attention-substack.md" class="article-link">Read the full article</a>
+                <p>&copy; 2026 Brewin Vaz. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="attention.js"></script>
+</body>
+</html>
