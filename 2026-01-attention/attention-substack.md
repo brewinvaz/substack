@@ -310,7 +310,7 @@ $$P(\text{next\_token}) = \text{softmax}\left(\frac{\text{logits}}{\text{tempera
 ```
 Temperature = 0.3:   Paris(78%) London(15%) Berlin(5%)  → almost always "Paris"
 Temperature = 1.0:   Paris(25%) London(15%) Berlin(12%) → balanced sampling
-Temperature = 2.0:   Paris(18%) London(14%) Berlin(11%) → might pick "Rome"
+Temperature = 2.0:   Paris(18%) London(14%) Berlin(11%) → might pick "London"
 ```
 
 For "What is the capital of France?" at temperature 1.0, the distribution looks like:
