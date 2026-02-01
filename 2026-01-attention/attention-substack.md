@@ -8,11 +8,11 @@
 
 The internet is full of prompting advice. "Be specific." "Use chain-of-thought." "Put important instructions at the beginning." These tips work, but rarely does anyone explain *why*. The result is cargo cult prompting: rituals that produce results without understanding.
 
-I'll explain how the attention mechanism actually works, then show why that knowledge makes popular prompting techniques make sense. Once you understand the machinery, you stop guessing and start engineering.
+I'll explain how the attention mechanism actually works, then show why that knowledge makes popular prompting techniques make sense. Once you understand the machinery, you stop guessing and start building better prompts.
 
 > **Note on Model Type**: This article focuses on decoder-only models which use causal attention - each token can only attend to previous tokens, not future ones. Encoder models like BERT use bidirectional attention where tokens can attend to all positions.
 
-> **TL;DR for Business Readers**: Attention is how LLMs decide which words in your prompt matter when generating each word of output. Understanding this mechanism explains why prompting techniques like "be specific" and "chain-of-thought" actually work and helps you write better prompts.
+> **TL;DR for the non-technical audience**: Attention is how language models decide which words in your prompt matter when generating each word of output. Understanding this mechanism explains why prompting techniques like "be specific" and "chain-of-thought" actually work and helps you write better prompts.
 
 > **Interactive Companion**: As you read, you can explore an [interactive attention visualizer](https://brewinvaz.github.io/substack/2026-01-attention/visualizer/index.html) that demonstrates each step with animated examples.
 
@@ -22,7 +22,7 @@ Every modern LLM is built on the transformer architecture, and the transformer's
 
 ### Step 1: Tokens and Embeddings
 
-**What this step does**: Convert your text into numerical representations that capture meaning.
+This step converts your text into numerical representations that capture meaning.
 
 Your text gets split into tokens, which are roughly word-sized chunks. "What is the capital of France?" becomes something like ["What", "is", "the", "capital", "of", "France", "?"]. The tokenization process can be reviewed separately, if there's enough interest.
 
@@ -44,17 +44,17 @@ Modern LLMs often use 512 to 4096 dimensions, enough axes to capture fine distin
 
 The model also adds positional encodings so it knows word order. Without this, "dog bites man" and "man bites dog" would look identical. The original transformer paper used fixed sinusoidal functions to encode position, but most modern models learn position embeddings during training, which allows them to discover whatever positional patterns work best. These positional encodings affect attention patterns, as we'll see when computing attention scores in Step 3.
 
-**Outcome**: Each word is now a list of numbers encoding its meaning plus its position. The model can do math on words.
+After this step, each word is a list of numbers encoding its meaning plus its position. The model can do "math" on words.
 
 ### Step 2: Query, Key, and Value Projections
 
-**What this step does**: Give each word three roles - a search query, a searchable label, and content to retrieve.
+Here each word gets three roles, acting as a search query, a searchable label, and content to retrieve.
 
-Here's where attention begins. Each token's embedding gets transformed into three different representations through learned weight matrices:
+Here's where attention begins. Each token's embedding gets transformed into three different representations through learned weight matrices (during model training).
 
-- **Query (Q)**: "What am I looking for?"
-- **Key (K)**: "What do I contain that others might want?"
-- **Value (V)**: "What information do I carry?"
+- **Query (Q)** answers "What am I looking for?"
+- **Key (K)** answers "What do I contain that others might want?"
+- **Value (V)** answers "What information do I carry?"
 
 Mathematically:
 
@@ -77,15 +77,13 @@ Where:
 
 Each token now has three vectors instead of one, letting it play different roles in the attention process.
 
-Imagine asking a question at a panel of experts. Your question is the Query. Each expert's area of expertise (on their name badge) is their Key. When your question about "market strategy" naturally resonates more with the business strategist than the chemist, you weigh their answers differently. What each expert tells you is their Value. You don't ignore anyone completely, but you listen more carefully to the relevant voices.
+Imagine asking a question at a panel of experts. Your question is the Query. Each expert's area of expertise (on their name badge) is their Key. When your question about "market strategy" naturally resonates more with the business strategist than the technologist, you weigh their answers differently. What each expert tells you is their Value. You don't ignore anyone completely, but you listen more carefully to the relevant voices.
 
-**Outcome**: Each word can now "search" for relevant words (Query), "be found" by other words (Key), and "provide information" (Value).
+After this step, each word can "search" for relevant words (Query), "be found" by other words (Key), and "provide information" (Value).
 
 ### Step 3: Computing Attention Scores
 
-**What this step does**: Compare every word's search query against every other word's label to find which words should pay attention to each other.
-
-Now the model figures out how much each token should "pay attention to" every other token. It does this by comparing each Query against all Keys using dot products (a measure of how aligned two vectors are):
+Now the model compares every word's search query against every other word's label to find which words should pay attention to each other. It does this by comparing each Query against all Keys using dot products (a measure of how aligned two vectors are):
 
 $$\text{Scores} = \frac{Q \cdot K^T}{\sqrt{d_k}}$$
 
@@ -110,7 +108,7 @@ Higher scores mean stronger relevance. Notice "France" has high scores for "capi
 
 The division by $\sqrt{d_k}$ (where $d_k$ is the dimension of the key vectors) prevents the dot products from getting too large, which would cause problems in the next step.
 
-**Outcome**: A grid showing relevance scores between all word pairs. Causal masking will be applied in the next step to prevent attending to future tokens.
+The result is a grid showing relevance scores between all word pairs. Causal masking will be applied in the next step to prevent attending to future tokens.
 
 **How Position Affects These Scores**
 
@@ -120,9 +118,9 @@ Remember the positional encodings from Step 1? They're embedded in Q and K befor
 
 ### Step 4: Softmax Normalization
 
-**What this step does**: Apply causal masking, then convert scores into percentages that sum to 100%.
+This step applies causal masking, then converts scores into percentages that sum to 100%.
 
-Before applying softmax, decoder-only models apply **causal masking**: positions where j > i (future tokens) are set to $-\infty$. This ensures each token can only attend to itself and previous tokens.
+Before applying softmax, decoder-only models apply **causal masking**: positions where j > i (future tokens) are set to $-\infty$ (negative infinity). This ensures each token can only attend to itself and previous tokens.
 
 $$A = \text{softmax}(\text{MaskedScores})$$
 
@@ -150,13 +148,13 @@ France  │    4.14   │    4.14    │  20%
 
 Now "France" attends strongly to "capital" with weight 0.35 (35%), moderately to "of" (25%), and to itself (20%). The future token "?" receives 0% attention due to causal masking. This makes sense: to predict what comes after "France," the model can only use information from words it has already seen.
 
-**Outcome**: Each word has an "attention budget" of 100% distributed across visible words (past and present) based on relevance. This is the attention pattern.
+Each word now has an "attention budget" of 100% distributed across visible words (past and present) based on relevance. This is the attention pattern.
 
 > **Try it**: See how softmax transforms raw scores into the attention pattern in the [Attention Visualizer](https://brewinvaz.github.io/substack/2026-01-attention/visualizer/index.html) (Step 5).
 
 ### Step 5: Weighted Combination of Values
 
-**What this step does**: Blend information from visible words according to the attention percentages. If "France" gives 35% attention to "capital", it absorbs 35% of "capital"'s information.
+In this step, information from visible words gets blended according to the attention percentages. If "France" gives 35% attention to "capital", it absorbs 35% of "capital"'s information.
 
 Using the attention weights from Step 4, each token blends information from all Value vectors:
 
@@ -187,7 +185,7 @@ $$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{Q \cdot K^T}{\sqrt{d_k}}
 
 This single equation is the heart of the transformer. A token's output is no longer just its own information. It's a blend of information from all tokens, weighted by relevance.
 
-**Outcome**: Each word now contains information from visible words. "France" carries info about WHAT is being asked (capital) from the context seen so far. Words are enriched with past context.
+Each word now contains information from visible words. "France" carries info about WHAT is being asked (capital) from the context seen so far. Words are enriched with past context.
 
 **What is the attention output, exactly?** The output is a vector with the *same dimensions* as the input embedding. For "France," the vector might shift like this:
 
@@ -200,9 +198,9 @@ This enriched vector passes through more transformer layers, accumulating contex
 
 ### Multi-Head Attention
 
-**What this step does**: Run attention multiple times in parallel, with each "head" learning different relationship types (grammar, meaning, etc.).
+The model doesn't run attention just once. It runs multiple attention operations in parallel, with each "head" learning different relationship types (grammar, meaning, etc.).
 
-The model doesn't run attention just once. It runs it multiple times in parallel with different learned weights, called "heads." Each head has its own $W_Q$, $W_K$, and $W_V$ matrices, so each head learns to look for different relationships.
+Each head has its own $W_Q$, $W_K$, and $W_V$ matrices, so each head learns to look for different relationships.
 
 With 8 heads (typical for smaller models), each head can specialize:
 - Head 1 might track question-answer relationships ("What" connects to answer)
@@ -221,20 +219,22 @@ $$\text{MultiHead} = \text{Concat}(\text{head}_1, \text{head}_2, \ldots, \text{h
 
 The output projection $W_O$ is a learned weight matrix that combines the concatenated results back into a single representation. It lets the model mix insights from all heads: "Head 1 found the question structure, Head 2 linked France to capital, now blend them together to predict Paris."
 
-**Outcome**: The model captures many relationship types at once - grammar, meaning, and context - giving it a rich understanding of how all words relate to each other.
+The model captures many relationship types at once (grammar, meaning, and context), giving it a rich understanding of how all words relate to each other.
 
 > **Try it**: The [Multi-Head Attention Visualizer](https://brewinvaz.github.io/substack/2026-01-attention/visualizer/multihead.html) shows how different heads learn different patterns and how their outputs combine through the $W_O$ projection.
 
 ### The Complete Transformer Block
 
-A transformer layer includes more than just attention. Each layer follows a pattern:
+Feel free to skip this section
 
-1. **Attention** mixes information *between* tokens (the mechanism we just covered)
-2. **Residual connection** adds the original input back to the attention output (like keeping a copy of your original notes while adding new annotations - this prevents information from getting lost as it passes through layers)
-3. **Layer normalization** stabilizes values to prevent them from exploding or vanishing (keeps all numbers in a reasonable range, like adjusting volume to stay within comfortable levels)
-4. **Feed-forward network** processes each token *individually* through two dense layers (a simple neural network that transforms each token's representation - this is where much of the model's "knowledge" is stored)
-5. **Another residual connection** adds the input to the feed-forward output
-6. **Another layer normalization** stabilizes again
+A transformer layer includes more than just attention. Each layer follows a pattern.
+
+1. **Attention** mixes information *between* tokens (the mechanism we just covered).
+2. **Residual connection** adds the original input back to the attention output. Think of it like keeping a copy of your original notes while adding new annotations. This prevents information from getting lost as it passes through layers.
+3. **Layer normalization** stabilizes values to prevent them from exploding or vanishing. It keeps all numbers in a reasonable range, like adjusting volume to stay within comfortable levels.
+4. **Feed-forward network** processes each token *individually* through two dense layers. This simple neural network transforms each token's representation, and it's where much of the model's "knowledge" is stored.
+5. **Another residual connection** adds the input to the feed-forward output.
+6. **Another layer normalization** stabilizes again.
 
 Why do residual connections matter? Without them, information tends to fade as it passes through many layers, like a message getting garbled in a game of telephone. Residual connections keep the original signal intact.
 
@@ -246,7 +246,7 @@ After passing through all these layers, each token position holds a **hidden sta
 
 ### Step 6: Projecting to Vocabulary (The Prediction Head)
 
-**What this step does**: Project the final hidden state to get a score for every possible next word.
+This step projects the final hidden state to get a score for every possible next word.
 
 To see prediction in action, let's continue with our example: imagine you've typed "What is the capital of France?" and are watching the model generate the answer. What happens inside?
 
@@ -295,17 +295,17 @@ This is the model's **learned knowledge** - stored not as facts in a database, b
 
 > **Try it**: The [Prediction Visualizer](https://brewinvaz.github.io/substack/2026-01-attention/visualizer/prediction.html) shows vocabulary vectors alongside the hidden state, demonstrating how alignment produces scores (Step 2).
 
-**Outcome**: Each word in the vocabulary now has a score (logit). High scores mean "more likely," low scores mean "less likely."
+Each word in the vocabulary now has a score (logit). High scores mean "more likely," low scores mean "less likely."
 
 ### Step 7: Probability Distribution (Softmax Over Vocabulary)
 
-**What this step does**: Convert raw scores into probabilities that sum to 100%.
+The same softmax function converts these scores into a probability distribution.
 
-The same softmax function converts these scores into a probability distribution:
+Mathematically:
 
 $$P(\text{next\_token}) = \text{softmax}\left(\frac{\text{logits}}{\text{temperature}}\right)$$
 
-**Temperature** controls the "peakiness" of the distribution. Temperature scaling happens *before* softmax: dividing by a small temperature (like 0.3) multiplies all scores by ~3, exaggerating the differences between them before softmax normalizes. The already-higher score becomes relatively much higher.
+**Temperature** controls the "peakiness" of the distribution. Temperature scaling happens *before* softmax. Dividing by a small temperature (like 0.3) multiplies all scores by ~3, exaggerating the differences between them before softmax normalizes. The already-higher score becomes relatively much higher.
 
 ```
 Temperature = 0.3:   Paris(78%) London(15%) Berlin(5%)  → almost always "Paris"
@@ -313,7 +313,7 @@ Temperature = 1.0:   Paris(25%) London(15%) Berlin(12%) → balanced sampling
 Temperature = 2.0:   Paris(18%) London(14%) Berlin(11%) → might pick "London"
 ```
 
-For "What is the capital of France?" at temperature 1.0, the distribution looks like:
+For "What is the capital of France?" at temperature 1.0, the distribution looks like this.
 
 ```
 "Paris"     0.25  ████████████████████
@@ -326,26 +326,26 @@ For "What is the capital of France?" at temperature 1.0, the distribution looks 
 
 Semantically appropriate completions get high probabilities; nonsensical ones get near-zero.
 
-**Outcome**: A probability distribution over all possible next words. Temperature controls how peaked or flat this distribution is.
+The result is a probability distribution over all possible next words. Temperature controls how peaked or flat this distribution is.
 
 ### Step 8: Token Selection (Sampling Strategies)
 
-**What this step does**: Choose which word to generate based on the probabilities.
+Now the model must choose which word to generate based on the probabilities.
 
-- **Greedy (temp=0)**: Always pick highest probability - deterministic, consistent
-- **Sampling (temp=1)**: Random sample weighted by probabilities - varied outputs
-- **Top-k**: Only consider the k most likely tokens (e.g., the top 50), then sample from those
-- **Top-p (nucleus sampling)**: Include tokens until their probabilities sum to p (e.g., 0.9), then sample from that set
+- **Greedy (temp=0)** always picks the highest probability token, producing deterministic, consistent output.
+- **Sampling (temp=1)** takes a random sample weighted by probabilities, producing varied outputs.
+- **Top-k** only considers the k most likely tokens (e.g., the top 50), then samples from those.
+- **Top-p (nucleus sampling)** includes tokens until their probabilities sum to p (e.g., 0.9), then samples from that set.
 
 This is why the same prompt can give different outputs: sampling introduces randomness, and temperature controls how much.
 
-**Outcome**: One token is selected as the next word. The selection method determines whether the model is predictable or creative.
+One token is selected as the next word. The selection method determines whether the model is predictable or creative.
 
 ### Step 9: The Generation Loop (Autoregressive Generation)
 
-**What this step does**: Add the selected word to context and repeat from Step 1 (embedding).
+Once a token is selected, it gets added to the context and the full pipeline (Steps 1-8) runs again.
 
-Once selected, the token appends to the context and the full pipeline (Steps 1-8) runs again:
+Here's how that looks:
 
 ```
 Iteration 1: [What][is][the][capital][of][France][?]               → Steps 1-8 → "Paris"
@@ -359,17 +359,13 @@ Iteration 3: [What][is][the][capital][of][France][?][Paris] + [.]  → Steps 1-8
 
 Each new token can attend to all previous tokens, including just-generated ones. Critically, tokens can only look backward (causal masking, which prevents each token from seeing tokens that come after it) - they can't see future tokens.
 
-**KV Caching: The Practical Optimization**
+**KV Caching, the Practical Optimization**
 
 In theory, each new token requires rerunning Steps 1-8 for the entire sequence. In practice, models use **KV caching** to avoid redundant computation. Here's the insight: when generating token 7, the Keys and Values for tokens 1-6 haven't changed - only token 7 is new.
 
-The model caches the K and V vectors from previous tokens. For each new token:
-- Compute Q, K, V only for the new token (Step 3)
-- Retrieve cached K, V for all previous tokens
-- Run attention using the new Q against all K, V (new + cached)
-- Cache the new token's K, V for future iterations
+The model caches the K and V vectors from previous tokens. For each new token, it computes Q, K, V only for the new token, retrieves cached K and V for all previous tokens, runs attention using the new Q against all K and V (new + cached), and caches the new token's K and V for future iterations.
 
-This reduces generation from O(n²) to O(n) per token - a massive speedup for long sequences. When you see "context window" limits (4K, 8K, 128K tokens), KV cache memory is often the bottleneck.
+This reduces generation from O(n²) to O(n) per token - a massive speedup for long sequences. When you see "context window" limits (4K, 8K, 128K tokens etc.), KV cache memory is often the bottleneck.
 
 **Why Chain-of-Thought Works**
 
@@ -385,7 +381,7 @@ Each intermediate token ("340", "+", "68") becomes a Key and Value in the contex
 
 Without chain-of-thought, the model must compute everything in its hidden state. With it, reasoning tokens serve as external working memory that attention reads from.
 
-**Outcome**: Text generated one token at a time, each becoming context for the next prediction. The autoregressive structure is why chain-of-thought works - intermediate tokens become working memory for attention.
+Text is generated one token at a time, with each becoming context for the next prediction. The autoregressive structure is why chain-of-thought works, since intermediate tokens become working memory for attention.
 
 ## See It In Action
 
@@ -468,7 +464,7 @@ Now that you understand the mechanism, let's look at common prompting advice and
 
 **Why it works**: This is called the "lost in the middle" phenomenon, and it has two distinct causes:
 
-1. **Attention dilution**: In long contexts, attention weights must be distributed across many tokens. Tokens at the start get attended to during initial processing. Tokens at the end are closest during generation. Middle tokens compete with more neighbors for attention weight.
+1. **Attention dilution**: In long contexts, attention weights must be distributed across many tokens. Tokens at the start get attended to during initial processing. Tokens at the end are closest during generation. Middle tokens compete with more neighbours for attention weight.
 
 2. **Training data bias**: Models learn during training that important content typically appears at document boundaries. Introductions and conclusions carry key information; middles contain supporting detail. This learned bias reinforces the attention effect.
 
@@ -506,38 +502,38 @@ Attention computes relationships between every pair of tokens. For $n$ tokens, t
 
 ### What Happens at the Limit
 
-As you approach the context limit:
+As you approach the context limit, several things happen.
 
-- **Attention dilution**: With more tokens competing for attention weight, each individual token's influence decreases.
-- **Lost in the middle intensifies**: The middle-position disadvantage grows with context length.
-- **Coherence degrades**: The model has more to track, and contradictions become more likely.
+- **Attention dilution** means more tokens compete for attention weight, so each individual token's influence decreases.
+- **Lost in the middle intensifies** as the middle-position disadvantage grows with context length.
+- **Coherence degrades** because the model has more to track, and contradictions become more likely.
 
 ### Strategies for Long Content
 
-- **Chunking**: Split long documents into sections, process separately, combine results.
-- **Summarization**: Condense earlier content into summaries that attention can reference efficiently.
-- **RAG (Retrieval-Augmented Generation)**: Retrieve only relevant chunks based on the current query instead of putting everything in context.
+- **Chunking** splits long documents into sections, processes them separately, and combines results.
+- **Summarization** condenses earlier content into summaries that attention can reference efficiently.
+- **RAG (Retrieval-Augmented Generation)** retrieves only relevant chunks based on the current query instead of putting everything in context.
 
 ## Common Failure Modes
 
-Understanding attention also explains why LLMs fail in predictable ways:
+Understanding attention also explains why LLMs fail in predictable ways.
 
-- **Attention dilution**: Too much "just in case" context dilutes attention across irrelevant tokens.
-- **Competing instructions**: Contradictory guidance causes attention to pull from both inconsistently.
-- **Lost in the middle**: Critical information buried in long prompts may be underweighted.
-- **Negation blindness**: "Don't do X" activates X in attention space.
-- **Hallucination from weak attention**: When Queries don't strongly match any Keys, the model generates plausible-sounding but incorrect content.
+- **Attention dilution** happens when too much "just in case" context dilutes attention across irrelevant tokens.
+- **Competing instructions** occur when contradictory guidance causes attention to pull from both inconsistently.
+- **Lost in the middle** means critical information buried in long prompts may be underweighted.
+- **Negation blindness** results from "Don't do X" activating X in attention space.
+- **Hallucination from weak attention** emerges when Queries don't strongly match any Keys, leading the model to generate plausible-sounding but incorrect content.
 
 ## Cost and Latency Considerations
 
 Most API pricing is per-token. Attention must process every input token and generate every output token.
 
-**Practical tips**:
+**Practical tips**
 
-- Use prompt caching when making multiple calls with the same system prompt
-- Be concise; every unnecessary token costs computation
-- Limit output length if you only need a brief answer
-- Consider RAG vs. long context based on what information needs simultaneous attention
+- Use prompt caching when making multiple calls with the same system prompt.
+- Be concise, since every unnecessary token costs computation.
+- Limit output length if you only need a brief answer.
+- Consider RAG vs. long context based on what information needs simultaneous attention.
 
 ## Quick Reference: Mechanism to Technique
 
@@ -556,7 +552,7 @@ Most API pricing is per-token. Attention must process every input token and gene
 
 ## Conclusion
 
-The attention mechanism is not magic. It's matrix multiplication, softmax, and weighted sums. Every token computes relevance to every other token, and the output is a blend of information based on those relevance scores.
+The attention mechanism is not magic. It's matrix multiplication, softmax, weighted sums etc. Every token computes relevance to every other token, and the output is a blend of information based on those relevance scores.
 
 Once you internalize this, prompting transforms from folklore into engineering:
 
