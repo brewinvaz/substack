@@ -740,8 +740,8 @@
                 <div class="stat-label">Paris / France similarity</div>
             </div>
             <div class="stat">
-                <div class="stat-value">0.12</div>
-                <div class="stat-label">cat / algorithm similarity</div>
+                <div class="stat-value">0.11</div>
+                <div class="stat-label">France / algorithm similarity</div>
             </div>
         </div>
 
@@ -804,8 +804,8 @@
             <div class="insight-title">Why This Matters</div>
             <p class="insight-text">
                 During training, the model learns that words appearing in similar contexts
-                should have similar vectors. <strong>"The ___ sat on the mat"</strong> works with
-                cat, dog, or child, so these words get pushed toward similar regions.
+                should have similar vectors. <strong>"The capital of ___ is Paris"</strong> works with
+                France, the country, the nation, so these words get pushed toward similar regions.
                 Meanwhile, <strong>"algorithm"</strong> appears in completely different contexts,
                 so it points in a very different direction.
             </p>
@@ -822,17 +822,17 @@
                     <div class="example-words">
                         <span class="example-word cluster-geography">Paris</span>
                         <span class="example-arrow">&harr;</span>
-                        <span class="example-word cluster-domestic">house</span>
+                        <span class="example-word cluster-geography">capital</span>
                     </div>
-                    <div class="example-score">Similarity: <span>0.25</span></div>
+                    <div class="example-score">Similarity: <span>0.79</span></div>
                 </div>
                 <div class="example-card">
                     <div class="example-words">
-                        <span class="example-word cluster-animal">cat</span>
+                        <span class="example-word cluster-geography">France</span>
                         <span class="example-arrow">&harr;</span>
                         <span class="example-word cluster-programming">algorithm</span>
                     </div>
-                    <div class="example-score">Similarity: <span>0.12</span></div>
+                    <div class="example-score">Similarity: <span>0.11</span></div>
                 </div>
             </div>
         </div>
@@ -995,6 +995,7 @@
             'Paris-code': 0.13,
             'France-dog': 0.12,
             'France-run': 0.09,
+            'France-algorithm': 0.11,
             'France-syntax': 0.11,
             'Berlin-cat': 0.13,
             'Berlin-function': 0.15,
