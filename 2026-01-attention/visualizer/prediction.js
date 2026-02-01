@@ -5,6 +5,7 @@
 const CONTEXT_TOKENS = ['What', 'is', 'the', 'capital', 'of', 'France', '?'];
 
 // Simplified hidden states (enriched by attention)
+// The last position "?" uses [0.9, 0.4, 0.8, 0.6] to match the article example
 const HIDDEN_STATES = [
     [0.78, 0.22, 0.65, 0.35],   // What - question word
     [0.72, 0.31, 0.58, 0.42],   // is - copula
@@ -12,38 +13,42 @@ const HIDDEN_STATES = [
     [0.55, 0.62, 0.88, 0.71],   // capital - key concept
     [0.18, 0.45, 0.28, 0.92],   // of - preposition
     [0.91, 0.38, 0.82, 0.64],   // France - entity (enriched with "capital" info)
-    [0.68, 0.15, 0.48, 0.29]    // ? - question marker
+    [0.9, 0.4, 0.8, 0.6]        // ? - question marker (matches article example)
 ];
 
 // Vocabulary with base logits (designed to show realistic distribution)
 // Capital cities as answers to "What is the capital of France?"
+// Logits calibrated to produce approximately: Paris 25%, London 15%, Berlin 12%, Rome 10%
+// at temperature 1.0, matching the article examples.
 const VOCABULARY = [
-    { token: 'Paris', logit: 4.5 },
-    { token: 'London', logit: 2.8 },
-    { token: 'Berlin', logit: 2.5 },
-    { token: 'Rome', logit: 2.3 },
-    { token: 'Madrid', logit: 2.1 },
-    { token: 'Vienna', logit: 1.8 },
-    { token: 'Brussels', logit: 1.6 },
-    { token: 'Amsterdam', logit: 1.4 },
-    { token: 'Lisbon', logit: 1.2 },
-    { token: 'Prague', logit: 1.0 },
-    { token: 'Warsaw', logit: 0.7 },
-    { token: 'Athens', logit: 0.4 }
+    { token: 'Paris', logit: 1.8 },
+    { token: 'London', logit: 1.3 },
+    { token: 'Berlin', logit: 1.1 },
+    { token: 'Rome', logit: 0.9 },
+    { token: 'Madrid', logit: 0.7 },
+    { token: 'Vienna', logit: 0.4 },
+    { token: 'Brussels', logit: 0.2 },
+    { token: 'Amsterdam', logit: 0.0 },
+    { token: 'Lisbon', logit: -0.3 },
+    { token: 'Prague', logit: -0.7 },
+    { token: 'Warsaw', logit: -1.1 },
+    { token: 'Athens', logit: -1.5 }
 ];
 
 // Vocabulary vectors (simplified 4D) - these represent the column vectors from W_vocab
 // that the model learned during training. Paris aligns well with hidden states
 // asking about "capital of France" because training adjusted it that way.
+// These values match the article examples for dot product calculation.
 const VOCAB_VECTORS = {
-    'Paris':   [0.65, 0.12, 0.45, 0.27],  // Very similar to hidden state for "?"
-    'London':  [0.52, 0.18, 0.38, 0.31],  // Somewhat similar (also a capital)
-    'Berlin':  [0.48, 0.20, 0.35, 0.33],  // Less similar
-    'pizza':   [-0.15, 0.72, 0.08, -0.25] // Very different direction
+    'Paris':        [0.85, 0.35, 0.75, 0.55],  // High alignment with hidden state (score: 1.83)
+    'London':       [0.6, 0.3, 0.5, 0.4],      // Moderate alignment (score: 1.30)
+    'Berlin':       [0.55, 0.28, 0.45, 0.38],  // Similar to London
+    'refrigerator': [-0.2, 0.1, 0.8, -0.4]     // Very different direction (score: 0.22)
 };
 
 // The hidden state for "?" position (used in alignment visualization)
-const PREDICTION_HIDDEN_STATE = [0.68, 0.15, 0.48, 0.29];
+// This matches the article example: "Hidden state for 'What is the capital of France?': [0.9, 0.4, 0.8, 0.6]"
+const PREDICTION_HIDDEN_STATE = [0.9, 0.4, 0.8, 0.6];
 
 // Continuation tokens for autoregressive generation
 const CONTINUATION_VOCAB = {
