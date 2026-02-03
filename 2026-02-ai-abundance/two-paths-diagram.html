@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Paths to the Flywheel - The New Scarcity</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            color: #e8e8e8;
+        }
+
+        h1 {
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            margin-bottom: 10px;
+            text-align: center;
+            color: #fff;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: #a0a0a0;
+            margin-bottom: 40px;
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .paths-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .path {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 16px;
+            padding: 30px;
+            border: 2px solid;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .path:hover {
+            transform: translateY(-5px);
+        }
+
+        .path.orchestration {
+            border-color: rgba(66, 165, 245, 0.4);
+        }
+
+        .path.orchestration:hover, .path.orchestration.active {
+            border-color: #42a5f5;
+            background: rgba(66, 165, 245, 0.05);
+            box-shadow: 0 10px 40px rgba(66, 165, 245, 0.2);
+        }
+
+        .path.trainable {
+            border-color: rgba(102, 187, 106, 0.4);
+        }
+
+        .path.trainable:hover, .path.trainable.active {
+            border-color: #66bb6a;
+            background: rgba(102, 187, 106, 0.05);
+            box-shadow: 0 10px 40px rgba(102, 187, 106, 0.2);
+        }
+
+        .path-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .path-icon {
+            font-size: 2rem;
+        }
+
+        .path-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .orchestration .path-title {
+            color: #42a5f5;
+        }
+
+        .trainable .path-title {
+            color: #66bb6a;
+        }
+
+        .flow-diagram {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+
+        .flow-box {
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-align: center;
+            width: 100%;
+            max-width: 220px;
+            font-size: 0.85rem;
+        }
+
+        .flow-box.primary {
+            font-weight: 600;
+        }
+
+        .orchestration .flow-box.primary {
+            background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+            border: 2px solid #42a5f5;
+        }
+
+        .trainable .flow-box.primary {
+            background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+            border: 2px solid #66bb6a;
+        }
+
+        .flow-box.secondary {
+            background: rgba(100, 100, 100, 0.2);
+            border: 1px solid rgba(150, 150, 150, 0.3);
+            color: #9e9e9e;
+        }
+
+        .flow-box.tertiary {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a0a0a0;
+        }
+
+        .flow-arrow {
+            color: #666;
+            font-size: 1.2rem;
+        }
+
+        .orchestration .flow-arrow {
+            color: #42a5f5;
+        }
+
+        .trainable .flow-arrow {
+            color: #66bb6a;
+        }
+
+        .flow-label {
+            font-size: 0.7rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .orchestration .flow-label.highlight {
+            color: #42a5f5;
+        }
+
+        .trainable .flow-label.highlight {
+            color: #66bb6a;
+        }
+
+        .feedback-loop {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .orchestration .feedback-loop {
+            color: #90caf9;
+            border-left: 3px solid #42a5f5;
+        }
+
+        .trainable .feedback-loop {
+            color: #a5d6a7;
+            border-left: 3px solid #66bb6a;
+        }
+
+        .characteristics {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .char-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            color: #888;
+        }
+
+        .char-list {
+            list-style: none;
+            font-size: 0.85rem;
+            color: #a0a0a0;
+        }
+
+        .char-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .char-list li::before {
+            content: "•";
+            flex-shrink: 0;
+        }
+
+        .orchestration .char-list li::before {
+            color: #42a5f5;
+        }
+
+        .trainable .char-list li::before {
+            color: #66bb6a;
+        }
+
+        .decision-criteria {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            max-width: 900px;
+            width: 100%;
+            margin-top: 30px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .criteria-header {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .criteria-header:first-child {
+            text-align: left;
+        }
+
+        .criteria-row {
+            display: contents;
+        }
+
+        .criteria-label {
+            font-size: 0.85rem;
+            color: #c0c0c0;
+            padding: 8px 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .criteria-value {
+            font-size: 0.85rem;
+            padding: 8px 10px;
+            text-align: center;
+            border-radius: 6px;
+        }
+
+        .criteria-value.orchestration {
+            background: rgba(66, 165, 245, 0.1);
+            color: #90caf9;
+        }
+
+        .criteria-value.trainable {
+            background: rgba(102, 187, 106, 0.1);
+            color: #a5d6a7;
+        }
+
+        .detail-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            max-width: 900px;
+            width: 100%;
+            margin-top: 30px;
+        }
+
+        .detail-panel h3 {
+            font-size: 1rem;
+            margin-bottom: 12px;
+            color: #9575cd;
+        }
+
+        .detail-panel p {
+            color: #a0a0a0;
+            line-height: 1.7;
+            font-size: 0.9rem;
+        }
+
+        .back-link {
+            margin-top: 40px;
+            color: #6c9cfc;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 700px) {
+            .paths-container {
+                grid-template-columns: 1fr;
+            }
+
+            .path {
+                padding: 20px;
+            }
+
+            .decision-criteria {
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 5px;
+                padding: 15px;
+            }
+
+            .criteria-header {
+                font-size: 0.65rem;
+                padding: 8px 5px;
+            }
+
+            .criteria-label {
+                font-size: 0.75rem;
+                padding: 6px 5px;
+            }
+
+            .criteria-value {
+                font-size: 0.75rem;
+                padding: 6px 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Two Paths to the Flywheel</h1>
+    <p class="subtitle">Both create compounding advantages through feedback loops. The difference is where the learning accumulates. Click each path to explore.</p>
+
+    <div class="paths-container">
+        <div class="path orchestration" onclick="showPath('orchestration')">
+            <div class="path-header">
+                <span class="path-icon">🎛️</span>
+                <span class="path-title">Orchestration Layer</span>
+            </div>
+
+            <div class="flow-diagram">
+                <div class="flow-box primary">Selection Model<br><span style="font-size: 0.75rem; opacity: 0.8;">You train this</span></div>
+                <span class="flow-arrow">↓</span>
+                <div class="flow-box secondary">Foundation Model API<br><span style="font-size: 0.75rem;">Frozen</span></div>
+                <span class="flow-arrow">↓</span>
+                <div class="flow-box tertiary">Output</div>
+                <span class="flow-arrow">↓</span>
+                <div class="flow-box tertiary">Measure Outcomes</div>
+            </div>
+
+            <div class="feedback-loop">
+                <span>↻</span>
+                <span>Outcome data trains your selector, not the foundation model</span>
+            </div>
+
+            <div class="characteristics">
+                <div class="char-title">Characteristics</div>
+                <ul class="char-list">
+                    <li>Deploy tomorrow with API calls</li>
+                    <li>No ML infrastructure needed</li>
+                    <li>Learning in orchestration layer</li>
+                    <li>Lower ceiling but faster start</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="path trainable" onclick="showPath('trainable')">
+            <div class="path-header">
+                <span class="path-icon">🧬</span>
+                <span class="path-title">Trainable Model</span>
+            </div>
+
+            <div class="flow-diagram">
+                <div class="flow-box primary">Your Fine-tuned Model<br><span style="font-size: 0.75rem; opacity: 0.8;">SLM / Open weights</span></div>
+                <span class="flow-arrow">↓</span>
+                <div class="flow-box tertiary">Output</div>
+                <span class="flow-arrow">↓</span>
+                <div class="flow-box tertiary">Measure Outcomes</div>
+            </div>
+
+            <div class="feedback-loop">
+                <span>↻</span>
+                <span>Outcome data fine-tunes the model itself</span>
+            </div>
+
+            <div class="characteristics">
+                <div class="char-title">Characteristics</div>
+                <ul class="char-list">
+                    <li>Own the model weights</li>
+                    <li>Cheaper inference at scale</li>
+                    <li>Learning in model itself</li>
+                    <li>Higher ceiling, more investment</li>
+                    <li>Requires ML infrastructure</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="decision-criteria">
+        <div class="criteria-header">Factor</div>
+        <div class="criteria-header" style="color: #42a5f5;">Orchestration</div>
+        <div class="criteria-header" style="color: #66bb6a;">Trainable</div>
+
+        <div class="criteria-row">
+            <div class="criteria-label">Data volume</div>
+            <div class="criteria-value orchestration">&lt;100K examples</div>
+            <div class="criteria-value trainable">&gt;100K examples</div>
+        </div>
+
+        <div class="criteria-row">
+            <div class="criteria-label">Latency needs</div>
+            <div class="criteria-value orchestration">Flexible (100ms+)</div>
+            <div class="criteria-value trainable">Sub-100ms required</div>
+        </div>
+
+        <div class="criteria-row">
+            <div class="criteria-label">Annual budget</div>
+            <div class="criteria-value orchestration">&lt;$200K/year</div>
+            <div class="criteria-value trainable">$500K+ available</div>
+        </div>
+
+        <div class="criteria-row">
+            <div class="criteria-label">Time to value</div>
+            <div class="criteria-value orchestration">Weeks</div>
+            <div class="criteria-value trainable">Months</div>
+        </div>
+
+        <div class="criteria-row">
+            <div class="criteria-label">ML team required</div>
+            <div class="criteria-value orchestration">No</div>
+            <div class="criteria-value trainable">Yes</div>
+        </div>
+
+        <div class="criteria-row">
+            <div class="criteria-label">Moat depth</div>
+            <div class="criteria-value orchestration">Shallow-Medium</div>
+            <div class="criteria-value trainable">Deep</div>
+        </div>
+    </div>
+
+    <div class="detail-panel" id="detail-panel">
+        <h3>The Common Thread</h3>
+        <p>Both paths follow the same flywheel logic: deploy, measure, learn, iterate. The difference is where the learning accumulates. With orchestration, your selector gets smarter at using a frozen model. With trainable models, the model weights themselves encode your domain knowledge. Many organizations start with orchestration to validate and collect data, then graduate to fine-tuned models once the economics justify the infrastructure investment.</p>
+    </div>
+
+    <a href="ai-abundance.md" class="back-link">← Back to article</a>
+
+    <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.75rem; color: #a0a0a0;">
+        © 2026 Brewin Vaz. All rights reserved.
+    </footer>
+
+    <script>
+        const details = {
+            orchestration: {
+                title: "Orchestration Layer Approach",
+                description: "You build a selection model that learns which prompts, strategies, and contexts work best. The foundation model stays frozen - it's just an API call. Your moat is the orchestration logic and the outcome data that trains it. This is faster to deploy because you don't need ML infrastructure. The tradeoff: you're renting the intelligence rather than owning it, and competitors with the same API access could theoretically build similar orchestration."
+            },
+            trainable: {
+                title: "Trainable Model Approach",
+                description: "You run your own model (open-weight LLM, SLM, or custom architecture) and fine-tune it on your outcome data. The model weights themselves become proprietary. After enough iterations, you have a model specialized for your exact use case. This requires ML infrastructure for training and serving, but the ceiling is higher: even competitors who see your product can't replicate your fine-tuned model without your training data."
+            }
+        };
+
+        function showPath(path) {
+            document.querySelectorAll('.path').forEach(p => p.classList.remove('active'));
+            document.querySelector('.path.' + path).classList.add('active');
+
+            const detail = document.getElementById('detail-panel');
+            detail.innerHTML = `
+                <h3>${details[path].title}</h3>
+                <p>${details[path].description}</p>
+            `;
+        }
+    </script>
+</body>
+</html>
