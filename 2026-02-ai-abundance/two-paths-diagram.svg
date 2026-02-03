@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 580">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#16213e"/>
+    </linearGradient>
+    <linearGradient id="orchGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1565c0"/>
+      <stop offset="100%" style="stop-color:#0d47a1"/>
+    </linearGradient>
+    <linearGradient id="trainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2e7d32"/>
+      <stop offset="100%" style="stop-color:#1b5e20"/>
+    </linearGradient>
+    <linearGradient id="sharedGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#5e35b1"/>
+      <stop offset="100%" style="stop-color:#4527a0"/>
+    </linearGradient>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#42a5f5"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#66bb6a"/>
+    </marker>
+    <marker id="arrowPurple" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#9575cd"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="580" fill="url(#bgGrad)"/>
+
+  <!-- Title -->
+  <text x="450" y="35" text-anchor="middle" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="22" font-weight="600">Two Paths to the Flywheel</text>
+  <text x="450" y="58" text-anchor="middle" fill="#a0a0a0" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="13">Both create compounding advantages. Choose based on your constraints.</text>
+
+  <!-- Shared top section: User Request -->
+  <rect x="350" y="85" width="200" height="50" rx="8" fill="url(#sharedGrad)" stroke="#9575cd" stroke-width="2"/>
+  <text x="450" y="115" text-anchor="middle" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="600">User Request</text>
+
+  <!-- Split arrows -->
+  <path d="M 400 135 L 220 175" fill="none" stroke="#42a5f5" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <path d="M 500 135 L 680 175" fill="none" stroke="#66bb6a" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <!-- PATH 1: Orchestration Layer (Left) -->
+  <text x="220" y="170" text-anchor="middle" fill="#42a5f5" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="16" font-weight="700">Path 1: Orchestration</text>
+
+  <!-- Selection Model box -->
+  <rect x="120" y="190" width="200" height="55" rx="8" fill="url(#orchGrad)" stroke="#42a5f5" stroke-width="2"/>
+  <text x="220" y="213" text-anchor="middle" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="13" font-weight="600">Selection Model</text>
+  <text x="220" y="232" text-anchor="middle" fill="#90caf9" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11">(You train this)</text>
+
+  <!-- Arrow to Foundation Model -->
+  <path d="M 220 245 L 220 270" fill="none" stroke="#42a5f5" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <!-- Foundation Model box -->
+  <rect x="120" y="275" width="200" height="55" rx="8" fill="rgba(100,100,100,0.3)" stroke="#9e9e9e" stroke-width="2"/>
+  <text x="220" y="298" text-anchor="middle" fill="#e0e0e0" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="13" font-weight="600">Foundation Model API</text>
+  <text x="220" y="317" text-anchor="middle" fill="#9e9e9e" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11">(Frozen, same for everyone)</text>
+
+  <!-- Arrow to Output -->
+  <path d="M 220 330 L 220 355" fill="none" stroke="#42a5f5" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <!-- Output box -->
+  <rect x="150" y="360" width="140" height="40" rx="6" fill="rgba(66,165,245,0.2)" stroke="#42a5f5" stroke-width="1"/>
+  <text x="220" y="385" text-anchor="middle" fill="#90caf9" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12">Output</text>
+
+  <!-- Arrow to Measure -->
+  <path d="M 220 400 L 220 425" fill="none" stroke="#42a5f5" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <!-- Measure box -->
+  <rect x="150" y="430" width="140" height="40" rx="6" fill="rgba(66,165,245,0.2)" stroke="#42a5f5" stroke-width="1"/>
+  <text x="220" y="455" text-anchor="middle" fill="#90caf9" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12">Measure Outcomes</text>
+
+  <!-- Feedback loop arrow back to Selection Model -->
+  <path d="M 150 450 Q 80 450 80 300 Q 80 210 120 217" fill="none" stroke="#42a5f5" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowBlue)"/>
+  <text x="60" y="340" text-anchor="middle" fill="#42a5f5" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" transform="rotate(-90, 60, 340)">Train selector</text>
+
+  <!-- PATH 2: Trainable Model (Right) -->
+  <text x="680" y="170" text-anchor="middle" fill="#66bb6a" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="16" font-weight="700">Path 2: Trainable Model</text>
+
+  <!-- Your Fine-tuned Model box -->
+  <rect x="580" y="190" width="200" height="55" rx="8" fill="url(#trainGrad)" stroke="#66bb6a" stroke-width="2"/>
+  <text x="680" y="213" text-anchor="middle" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="13" font-weight="600">Your Fine-tuned Model</text>
+  <text x="680" y="232" text-anchor="middle" fill="#a5d6a7" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11">(SLM / Open weights)</text>
+
+  <!-- Arrow to Output -->
+  <path d="M 680 245 L 680 355" fill="none" stroke="#66bb6a" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <!-- Output box -->
+  <rect x="610" y="360" width="140" height="40" rx="6" fill="rgba(102,187,106,0.2)" stroke="#66bb6a" stroke-width="1"/>
+  <text x="680" y="385" text-anchor="middle" fill="#a5d6a7" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12">Output</text>
+
+  <!-- Arrow to Measure -->
+  <path d="M 680 400 L 680 425" fill="none" stroke="#66bb6a" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <!-- Measure box -->
+  <rect x="610" y="430" width="140" height="40" rx="6" fill="rgba(102,187,106,0.2)" stroke="#66bb6a" stroke-width="1"/>
+  <text x="680" y="455" text-anchor="middle" fill="#a5d6a7" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12">Measure Outcomes</text>
+
+  <!-- Feedback loop arrow back to Fine-tuned Model -->
+  <path d="M 750 450 Q 820 450 820 300 Q 820 210 780 217" fill="none" stroke="#66bb6a" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowGreen)"/>
+  <text x="840" y="340" text-anchor="middle" fill="#66bb6a" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" transform="rotate(90, 840, 340)">Fine-tune model</text>
+
+  <!-- Comparison table at bottom -->
+  <rect x="100" y="490" width="320" height="50" rx="6" fill="rgba(66,165,245,0.1)" stroke="#42a5f5" stroke-width="1"/>
+  <text x="260" y="510" text-anchor="middle" fill="#42a5f5" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="600">Faster to start, lower ceiling</text>
+  <text x="260" y="528" text-anchor="middle" fill="#90caf9" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">Learning in selector, not model weights</text>
+
+  <rect x="480" y="490" width="320" height="50" rx="6" fill="rgba(102,187,106,0.1)" stroke="#66bb6a" stroke-width="1"/>
+  <text x="640" y="510" text-anchor="middle" fill="#66bb6a" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="600">Higher ceiling, more investment</text>
+  <text x="640" y="528" text-anchor="middle" fill="#a5d6a7" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">Learning in model weights themselves</text>
+
+  <!-- Copyright -->
+  <text x="450" y="568" text-anchor="middle" fill="#a0a0a0" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">© 2026 Brewin Vaz. All rights reserved.</text>
+</svg>
