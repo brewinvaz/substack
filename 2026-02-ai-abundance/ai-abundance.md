@@ -19,7 +19,7 @@ Think about value creation as a function of a few inputs:
 - Judgment (knowing what's worth doing)
 - Execution speed (how fast you close the loop)
 
-One concept will come up repeatedly: *ground truth*. This is data that reflects actual outcomes in the physical world, distinct from the probabilistic predictions of a model. Did the customer actually convert? Ground truth is expensive to collect because it requires waiting for reality to unfold. Call this *Ground Truth Scarcity*; the constraint that matters when analytical labor is abundant.
+One concept will come up repeatedly: *ground truth*. This is data that reflects actual outcomes in the physical world, distinct from the probabilistic predictions of a model. Did the customer actually convert? Ground truth is expensive to collect because it requires waiting for reality to unfold and building systems that can observe it reliably. Call this *Ground Truth Scarcity*; the constraint that matters when analytical labor is abundant.
 
 ![Value Creation in the AI Era](value-creation-model.svg)
 
@@ -81,7 +81,7 @@ The people who can step back and ask "wait, should we even be doing this?" are m
 
 **Accountability and meaning.** AI can predict a number, but only a human understands what that number *means*; to a relationship, a brand reputation, a team's morale. Accountability isn't just about having someone to blame when things go wrong. It's about having someone who *cares* about the outcome in ways that shape how decisions get made. And just as the human takes the blame for the crash, the human also gets the credit for the breakthrough. An AI cannot be promoted; it cannot build a reputation. Accountability is the mechanism that allows humans to capture the upside of their judgment.
 
-That said, the legal structures matter too. When an AI-assisted radiology system misses a diagnosis, the malpractice suit names the physician, not OpenAI. When an algorithmic trading system causes losses, regulators want to talk to a human. The EU AI Act explicitly requires human oversight for high-risk applications. These aren't philosophical preferences; they're legal structures that create demand for humans who can credibly say "I reviewed this and take responsibility."
+That said, the legal structures matter too. When an AI-assisted radiology system misses a diagnosis, the malpractice suit names the physician, not OpenAI. When an algorithmic trading system causes losses, regulators want to talk to a human. The EU AI Act explicitly requires meaningful human oversight for high-risk applications. These aren't philosophical preferences; they're legal structures that create demand for humans who can credibly say "I reviewed this and take responsibility."
 
 The legal profession learned this the hard way. In 2023, attorney Steven Schwartz submitted a brief citing six cases that didn't exist; ChatGPT had generated plausible-sounding precedents complete with fake quotes. The judge fined the lawyers $5,000. The AI had no duty. Schwartz did. That duty couldn't be delegated to a language model, and accountability landed exactly where it always does: on the human who signed the brief.
 
@@ -95,11 +95,11 @@ A common objection here: "We don't have access to the model weights. We can't fi
 
 You don't need to touch the foundation model. **The learning happens at the orchestration layer.**
 
-Intercom's Fin AI agent demonstrates this concretely. Resolution rates climbed from 25% at launch (March 2023) to 66% by late 2025, still increasing roughly 1% monthly. The foundation models haven't changed dramatically; what changed is the orchestration layer. Fin learns from human agent behavior, feeds successful resolutions back into training, and continuously improves matching between question types and response strategies.
+Intercom's Fin AI agent demonstrates this concretely. Intercom reports resolution rates improving from roughly 25% at launch in 2023 to approximately 66% by late 2025, with continued incremental gains. The foundation models haven't changed dramatically; what changed is the orchestration layer. Fin learns from human agent behavior, feeds successful resolutions back into training, and continuously improves matching between question types and response strategies.
 
-Vercel's support agent shows even more aggressive numbers. As of early 2026, they've hit 87.6% autonomous resolution on support cases, with an all-time average of 80.7% across 40,000+ tickets. But the more interesting part is what happens to the remaining 13%. CEO Guillermo Rauch describes a system where tickets that can't be resolved through guidance get triaged by an AI PM and routed to coding agents. Customer reports a product defect? That becomes a code change. The support flywheel doesn't just resolve tickets; it improves the product.
+Vercel has publicly reported autonomous resolution rates approaching 85-90% on support cases. But the more interesting part is what happens to the tickets that remain. CEO Guillermo Rauch describes a system where tickets that can't be resolved through guidance get triaged by an AI PM and routed to coding agents. Customer reports a product defect? That becomes a code change. The support flywheel doesn't just resolve tickets; it improves the product.
 
-Duolingo runs a similar loop. Their Birdbrain system optimizes exercise difficulty in real-time based on learner performance. With 500 million learners, they collect more interaction data daily than competitors collect in months. Adaptive exercises using machine learning to predict user errors reduced dropout by 10%.
+Duolingo runs a similar loop. Their Birdbrain system optimizes exercise difficulty in real-time based on learner performance. With 500 million learners, they collect more interaction data daily than competitors collect in months. Duolingo has reported double-digit improvements in learner retention tied to adaptive exercise difficulty.
 
 None of these companies is doing anything exotic with the underlying models. They're measuring outcomes, feeding signals back into selection logic, and iterating. The moat isn't the AI. It's the closed loop.
 
@@ -119,9 +119,11 @@ The difference is permission to act. An AI that drafts an email is an Output Sys
 
 ![The Flywheel Effect](flywheel-diagram.svg)
 
+Everything so far assumes you're building systems around foundation models you don't control. There's another path emerging.
+
 ## The deeper moat: trainable models
 
-There's a second path worth considering. Instead of building an orchestration layer around a frozen API, you can run your own model and train it directly on your outcome data.
+Instead of building an orchestration layer around a frozen API, you can run your own model and train it directly on your outcome data.
 
 Open-weight models have gotten remarkably capable. Smaller models, sometimes called SLMs (small language models), can match frontier model performance on narrow tasks when fine-tuned well. The economics favor them for production workloads: faster inference, cheaper fine-tuning, and you own the weights.
 
@@ -145,6 +147,8 @@ The decision between orchestration and trainable models isn't about capability. 
 Most organizations should start with orchestration. It's faster, cheaper, and lets you validate the product before committing to infrastructure.
 
 The flywheel logic is the same either way. Deploy, measure, learn, iterate. The question is just where the learning accumulates: in your selector or in your model weights.
+
+Whether you choose orchestration or trainable models, the goal is the same; a system that learns. The next question is how this shows up in the numbers.
 
 ## The economics: what this means for your P&L
 
@@ -180,7 +184,7 @@ This creates reinvestment capacity. The question is where to deploy it.
 
 When intelligence commoditizes, proprietary data value increases by multiples. Consider the companies that have made this tangible.
 
-Tesla's FSD fleet has logged nearly 7 billion miles, growing at 8 million miles per day. Each mile contains sensor readings and edge cases competitors would need years to accumulate. Netflix's recommendation engine drives 80% of content watched on the platform; the company estimates this personalization saves roughly $1B per year in reduced churn. Spotify's listening behavior feeds personalized playlists that drive retention, creating a flywheel that also generates B2B revenue through artist and label insights.
+Tesla reports billions of real-world driving miles collected from its fleet. Each mile contains sensor readings and edge cases competitors would need years to accumulate. Netflix's recommendation engine drives 80% of content watched on the platform; the company estimates this personalization saves roughly $1B per year in reduced churn. Spotify's listening behavior feeds personalized playlists that drive retention, creating a data flywheel competitors can't easily replicate.
 
 The pattern is consistent: data that seemed like a byproduct becomes the core asset when analytical intelligence is no longer the constraint.
 
@@ -194,7 +198,7 @@ The pattern is consistent: data that seemed like a byproduct becomes the core as
 
 **ROI reality check**
 
-MIT's 2025 report "The GenAI Divide" found 95% of AI pilots delivered no measurable P&L impact, despite $35-40 billion in US business investment. The pattern: projects that remained static without feedback loops. Among projects that do succeed, Deloitte's research shows most achieve satisfactory ROI within two to four years, and an IDC study found companies average $3.50 in value for every $1 spent on AI.
+MIT's 2025 report "The GenAI Divide" found that a large majority of AI pilots had not yet produced measurable P&L impact, despite $35-40 billion in US business investment. The pattern: projects that remained static without feedback loops. Among projects that do succeed, Deloitte's research shows most achieve satisfactory ROI within two to four years, and an IDC study found companies average $3.50 in value for every $1 spent on AI.
 
 The organizations that treat AI cost savings as margin expansion are missing the point. The ones that reinvest into feedback infrastructure are building the moats.
 
@@ -224,7 +228,7 @@ There's a collective action problem lurking here. If every company builds Outcom
 
 The transition is ongoing and the equilibrium isn't clear. Some of what I'm calling "human advantages" might turn out to be automatable in ways I'm not anticipating. But the structural logic of complements seems robust: when one input gets cheap, value shifts to what remains scarce. The skills that matter now are different from the ones that mattered five years ago, and they'll be different again five years from now. What's new is the pace of the shift; and organizations have a responsibility to invest in helping people navigate it. The companies that recognize this obligation will keep the trust of the people they need.
 
-If you're an executive reading this, I want to be direct: this is on you. You're the one deciding whether AI adoption means investing in your people or extracting from them. You're the one choosing between "30% cost reduction" and "30% shift to higher-leverage work." The spreadsheet looks the same either way. The outcomes don't. The people who built your company are watching what you do next.
+If you're an executive reading this, much of this transition ultimately sits at the leadership level. You're the one deciding whether AI adoption means investing in your people or extracting from them. You're the one choosing between "30% cost reduction" and "30% shift to higher-leverage work." The spreadsheet looks the same either way. The outcomes don't. The people who built your company are watching what you do next.
 
 > **As Syndrome observed in *The Incredibles*: "When everyone's super, no one will be."**
 >
