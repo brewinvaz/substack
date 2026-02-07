@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 430">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#16213e"/>
+    </linearGradient>
+    <linearGradient id="commoditizing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3a3a5c"/>
+      <stop offset="100%" style="stop-color:#2a2a4c"/>
+    </linearGradient>
+    <linearGradient id="scarce" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e5128"/>
+      <stop offset="100%" style="stop-color:#0f3018"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="430" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text x="400" y="45" text-anchor="middle" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="24" font-weight="600">Value Creation in the AI Era</text>
+  <text x="400" y="70" text-anchor="middle" fill="#a0a0a0" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14">When one input gets cheap, the others become more valuable</text>
+
+  <!-- Factor 1: Intelligence (Commoditizing) -->
+  <g transform="translate(100, 130)">
+    <rect x="0" y="0" width="120" height="140" rx="12" fill="url(#commoditizing)" stroke="#5a5a7c" stroke-width="2"/>
+    <!-- Brain icon -->
+    <circle cx="60" cy="30" r="16" fill="none" stroke="#b0b0b0" stroke-width="2"/>
+    <path d="M52 30 Q56 23 60 30 Q64 23 68 30" fill="none" stroke="#b0b0b0" stroke-width="1.5"/>
+    <text x="60" y="80" text-anchor="middle" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="600">Intelligence</text>
+    <rect x="20" y="90" width="80" height="22" rx="11" fill="rgba(150,150,150,0.3)"/>
+    <text x="60" y="105" text-anchor="middle" fill="#b0b0b0" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" font-weight="500">COMMODITIZING</text>
+  </g>
+
+  <!-- Multiply symbol 1 -->
+  <text x="245" y="210" text-anchor="middle" fill="#666666" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="28" font-weight="300">×</text>
+
+  <!-- Factor 2: Data (Scarce) -->
+  <g transform="translate(270, 130)">
+    <rect x="0" y="0" width="120" height="140" rx="12" fill="url(#scarce)" stroke="#2e7d32" stroke-width="2"/>
+    <!-- Bar chart icon -->
+    <rect x="45" y="33" width="8" height="18" fill="#81c784"/>
+    <rect x="56" y="23" width="8" height="28" fill="#81c784"/>
+    <rect x="67" y="28" width="8" height="23" fill="#81c784"/>
+    <text x="60" y="80" text-anchor="middle" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="600">Data</text>
+    <rect x="15" y="90" width="90" height="22" rx="11" fill="rgba(46,125,50,0.3)"/>
+    <text x="60" y="105" text-anchor="middle" fill="#81c784" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" font-weight="500">NEW SCARCITY</text>
+  </g>
+
+  <!-- Multiply symbol 2 -->
+  <text x="415" y="210" text-anchor="middle" fill="#666666" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="28" font-weight="300">×</text>
+
+  <!-- Factor 3: Judgment (Scarce) -->
+  <g transform="translate(440, 130)">
+    <rect x="0" y="0" width="120" height="140" rx="12" fill="url(#scarce)" stroke="#2e7d32" stroke-width="2"/>
+    <!-- Target icon -->
+    <circle cx="60" cy="33" r="14" fill="none" stroke="#81c784" stroke-width="2"/>
+    <circle cx="60" cy="33" r="8" fill="none" stroke="#81c784" stroke-width="2"/>
+    <circle cx="60" cy="33" r="3" fill="#81c784"/>
+    <text x="60" y="80" text-anchor="middle" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="600">Judgment</text>
+    <rect x="15" y="90" width="90" height="22" rx="11" fill="rgba(46,125,50,0.3)"/>
+    <text x="60" y="105" text-anchor="middle" fill="#81c784" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" font-weight="500">NEW SCARCITY</text>
+  </g>
+
+  <!-- Multiply symbol 3 -->
+  <text x="585" y="210" text-anchor="middle" fill="#666666" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="28" font-weight="300">×</text>
+
+  <!-- Factor 4: Speed (Scarce) -->
+  <g transform="translate(610, 130)">
+    <rect x="0" y="0" width="120" height="140" rx="12" fill="url(#scarce)" stroke="#2e7d32" stroke-width="2"/>
+    <!-- Lightning bolt icon -->
+    <path d="M65 17 L55 33 L62 33 L55 49 L70 29 L62 29 Z" fill="#81c784"/>
+    <text x="60" y="80" text-anchor="middle" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="600">Speed</text>
+    <rect x="15" y="90" width="90" height="22" rx="11" fill="rgba(46,125,50,0.3)"/>
+    <text x="60" y="105" text-anchor="middle" fill="#81c784" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" font-weight="500">NEW SCARCITY</text>
+  </g>
+
+  <!-- Bottom insight box -->
+  <rect x="100" y="300" width="600" height="70" rx="10" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="130" cy="335" r="6" fill="#81c784"/>
+  <text x="150" y="325" fill="#81c784" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" font-weight="600">The Complement Effect</text>
+  <text x="150" y="348" fill="#c0c0c0" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11">As AI commoditizes analytical labor, proprietary data, judgment, and execution</text>
+  <text x="150" y="363" fill="#c0c0c0" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11">speed become the limiting factors that determine competitive advantage.</text>
+
+  <!-- Copyright -->
+  <text x="400" y="418" text-anchor="middle" fill="#a0a0a0" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">© 2026 Brewin Vaz. All rights reserved.</text>
+</svg>
