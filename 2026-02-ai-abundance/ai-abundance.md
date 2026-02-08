@@ -23,9 +23,9 @@ One concept will come up repeatedly: *ground truth*. This is data that reflects 
 
 ![Value Creation in the AI Era](value-creation-model.svg)
 
-Before LLMs, general-purpose analytical labor was expensive. You needed analysts, consultants, engineers. If you could afford more of them, you had an advantage.
+Before LLMs, general-purpose analytical labor was expensive.If you could afford more headcount, you had an advantage.
 
-Now that work is commoditizing. Not everywhere, not completely; requirements like security, reliability, and performance still matter, and so do the people who understand them. But for a lot of analytical work, the floor is dropping. Summarization, copywriting, first-draft code; tasks that once required your full attention now happen in the background.
+Now that work is commoditizing. Not everywhere, not completely; requirements like security, reliability, and performance still matter, and so do the people who understand them. But for a lot of analytical work, the floor is dropping. Summarization, copywriting with research, first-draft code; tasks that once required your full attention now happen in the background.
 
 When one input gets cheaper, its complements get more valuable. Clayton Christensen called this the Law of Conservation of Attractive Profits. When one layer commoditizes, an adjacent layer captures the margin. Ben Thompson has documented this pattern across every major tech transition; hardware to software, distribution to aggregation, content to curation. The profits don't disappear. They migrate.
 
@@ -55,7 +55,7 @@ The human feedback moat persists where formal verification fails, where ground t
 
 If intelligence is commoditizing, what happens to the people who used to provide it? The fear is rational. Layoffs are real. Some roles will be eliminated. The honest framing isn't "AI won't take your job." It's "here's what will still matter, and here's what you can do about it."
 
-Some human capabilities become *more* valuable when AI handles routine work, not less. AI may mean fewer roles overall, but the roles that remain are harder to fill and matter more. Organizations that treat AI adoption as purely a technology project, without investing in their people, will struggle to capture the value. The efficiency gains shouldn't accrue solely to shareholders while workers bear the transition costs.
+Some human capabilities become *more* valuable when AI handles routine work, not less. AI may mean fewer roles overall, but the roles that remain are harder to fill and matter. Organizations that treat AI adoption as purely a technology project, without investing in their people, will struggle to capture the value. The efficiency gains shouldn't accrue solely to shareholders while workers bear the transition costs.
 
 Developing new capabilities takes time, energy, and often money that not everyone has equally. These aren't personal failures; they're structural constraints. Policy, employer investment, and social safety nets matter too. The capabilities described below aren't innate talents. They're skills that can be developed.
 
@@ -95,7 +95,7 @@ A common objection here: "We don't have access to the model weights. We can't fi
 
 You don't need to touch the foundation model. **The learning happens at the orchestration layer.**
 
-Intercom's Fin AI agent demonstrates this concretely. Intercom reports resolution rates improving from roughly 25% at launch in 2023 to approximately 66% by late 2025, with continued incremental gains. The foundation models haven't changed dramatically; what changed is the orchestration layer. Fin learns from human agent behavior, feeds successful resolutions back into training, and continuously improves matching between question types and response strategies.
+Intercom's Fin AI agent demonstrates this concretely. Intercom reports resolution rates improving from roughly 25% at launch in 2023 to approximately 66% by late 2025, with continued incremental gains. The foundation models haven't changed dramatically (I say this loosely); what changed is the orchestration layer. Fin learns from human agent behavior, feeds successful resolutions back into training, and continuously improves matching between question types and response strategies.
 
 Vercel has publicly reported autonomous resolution rates approaching 85-90% on support cases. But the more interesting part is what happens to the tickets that remain. CEO Guillermo Rauch describes a system where tickets that can't be resolved through guidance get triaged by an AI PM and routed to coding agents. Customer reports a product defect? That becomes a code change. The support flywheel doesn't just resolve tickets; it improves the product.
 
